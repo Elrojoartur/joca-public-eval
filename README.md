@@ -2,8 +2,6 @@
 
 Sistema de información web desarrollado para el **Centro de Capacitación en Electrónica y Nuevas Tecnologías (CCENT)**, que integra la gestión de procesos escolares y comerciales en una sola plataforma.
 
-> **Aviso de publicación:** Este repositorio es una copia sanitizada del proyecto original, preparada exclusivamente para revisión técnica académica. Credenciales, archivos de entorno reales, configuraciones de despliegue privadas, logs del sistema y documentación interna han sido excluidos por razones de seguridad. Ver sección [Nota de Seguridad](#nota-de-seguridad).
-
 ---
 
 ## Índice
@@ -16,7 +14,7 @@ Sistema de información web desarrollado para el **Centro de Capacitación en El
 - [Ejecución local](#ejecución-local)
 - [Tests](#tests)
 - [Documentación](#documentación)
-- [Nota de seguridad](#nota-de-seguridad)
+
 
 ---
 
@@ -262,24 +260,7 @@ python manage.py test apps.authn
 | [`docs_public/db/ddl_3fn_pgadmin.sql`](docs_public/db/ddl_3fn_pgadmin.sql) | Esquema de base de datos en 3FN |
 | [`docs_public/rules/business_rules.yml`](docs_public/rules/business_rules.yml) | Reglas de negocio en YAML |
 
----
 
-## Nota de seguridad
-
-Este repositorio fue **saneado para publicación académica pública**. Se excluyeron deliberadamente:
-
-| Categoría | Detalle |
-|---|---|
-| Archivos `.env` reales | `.env`, `.env.dev`, `.env.prod` con credenciales de producción |
-| Claves secretas | `DJANGO_SECRET_KEY` y contraseñas de base de datos reales |
-| Datos SMTP | Credenciales de cuenta de correo de producción |
-| Datos de servidor | IPs, dominios y rutas del VPS de producción |
-| Archivos de IA | Instrucciones y prompts de GitHub Copilot Agents |
-| Base de datos local | `db.sqlite3` con datos de sesiones de desarrollo |
-| Logs del sistema | Registros de actividad con datos de prueba |
-| Documentos internos | Listas de tareas, retrospectivas y documentos de gestión |
-
-Para ejecutar el proyecto en cualquier entorno, copiar `.env.example` como `.env` y definir valores propios. Nunca usar los valores de `.env.example` directamente en producción.
 
 ---
 
