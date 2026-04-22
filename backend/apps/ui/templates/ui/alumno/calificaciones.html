@@ -1,0 +1,40 @@
+{% extends "ui/base.html" %}
+{% block title %}Mis calificaciones | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="h4 mb-1">Mis calificaciones</h1>
+  <p class="muted mb-0">Consulta tus calificaciones por inscripción/grupo.</p>
+</div>
+
+{% if not alumno %}
+  <div class="alert alert-warning">Tu cuenta no está vinculada a un registro de alumno.</div>
+  <a class="btn btn-outline-secondary btn-sm" href="/panel/alumno/">Volver</a>
+{% else %}
+  <div class="card card-soft">
+    <div class="card-body table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Grupo</th>
+            <th>Período</th>
+            <th>Calificación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td>{{ r.grupo }}</td>
+            <td>{{ r.periodo }}</td>
+            <td>{% if r.calificacion %}{{ r.calificacion.valor }}{% else %}<span class="text-muted">Sin captura</span>{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-muted text-center">Sin registros.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <a class="btn btn-outline-secondary btn-sm" href="/panel/alumno/">Volver</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "ui/base.html" %}
+{% block title %}Tablero | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="h4 mb-1">Tablero</h1>
+      <p class="muted mb-0">KPIs rápidos del sistema.</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/reportes/">Volver</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for k,v in kpis.items %}
+  <div class="col-12 col-md-6 col-lg-3">
+    <div class="card card-soft h-100">
+      <div class="card-body">
+        <div class="muted">{{ k }}</div>
+        <div class="h4 mb-0">{{ v }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

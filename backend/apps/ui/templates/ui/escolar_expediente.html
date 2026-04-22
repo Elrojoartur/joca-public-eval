@@ -1,0 +1,294 @@
+{% extends 'ui/base.html' %}
+{% block title %}Expediente {{ alumno.matricula }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header mb-1">
+    <h1 class="h4 mb-1"><strong>Expediente de alumno</strong></h1>
+    <p class="muted mb-0">Información completa del alumno: datos personales, domicilio e historial académico.</p>
+</div>
+
+{% if messages %}
+    {% for m in messages %}
+        <div class="alert alert-{{ m.tags }} py-1 px-2 mb-1">{{ m }}</div>
+    {% endfor %}
+{% endif %}
+
+<div class="card card-soft mb-2">
+    <div class="card-body py-1 px-2">
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            <a class="btn btn-outline-secondary btn-sm"
+               href="/panel/escolar/alumnos/?modo=lista">
+                ← Volver a lista
+            </a>
+            <a class="btn btn-outline-primary btn-sm"
+               href="/panel/escolar/alumnos/?modo=form&edit={{ alumno.pk }}">
+                Editar alumno
+            </a>
+            <a class="btn btn-outline-secondary btn-sm"
+               href="/panel/escolar/alumnos/{{ alumno.pk }}/boleta/">
+                Ver boleta PDF
+            </a>
+            {% if alumno_tiene_acceso %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                Acceso activo: {{ alumno.matricula }}
+            </span>
+            {% elif alumno.correo %}
+            <form method="post"
+                  action="/panel/escolar/alumnos/{{ alumno.pk }}/generar-acceso/"
+                  class="d-inline mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm">Generar acceso</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ─── Sección 1: Datos del alumno ──────────────────────────────────── #}
+<div class="card card-soft mb-2">
+    <div class="card-body p-2">
+        <h2 class="h5 mb-2 border-bottom pb-1"><strong>Datos del alumno</strong></h2>
+        <div class="row g-2">
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">Matrícula</p>
+                <p class="fw-semibold mb-0 font-monospace">
+                    {% if alumno.matricula %}{{ alumno.matricula }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-8">
+                <p class="small text-muted mb-0">Nombre completo</p>
+                <p class="fw-semibold mb-0">
+                    {% if alumno.nombre_completo %}{{ alumno.nombre_completo }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">Correo electrónico</p>
+                <p class="fw-semibold mb-0">
+                    {% if alumno.correo %}{{ alumno.correo }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">Teléfono</p>
+                <p class="fw-semibold mb-0">
+                    {% if alumno.telefono %}{{ alumno.telefono }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">CURP</p>
+                <p class="fw-semibold mb-0 font-monospace" style="letter-spacing:.05em;">
+                    {% if alumno.curp %}{{ alumno.curp }}{% else %}<span class="text-muted fst-italic fw-normal">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">RFC</p>
+                <p class="fw-semibold mb-0 font-monospace" style="letter-spacing:.05em;">
+                    {% if alumno.rfc %}{{ alumno.rfc }}{% else %}<span class="text-muted fst-italic fw-normal">No registrado</span>{% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ─── Sección 2: Domicilio ──────────────────────────────────────────── #}
+<div class="card card-soft mb-2">
+    <div class="card-body p-2">
+        <h2 class="h5 mb-2 border-bottom pb-1"><strong>Domicilio</strong></h2>
+        {% if domicilio %}
+        <div class="row g-2">
+            <div class="col-12 col-md-6">
+                <p class="small text-muted mb-0">Calle</p>
+                <p class="fw-semibold mb-0">
+                    {% if domicilio.calle %}{{ domicilio.calle }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="small text-muted mb-0">Número</p>
+                <p class="fw-semibold mb-0">
+                    {% if domicilio.numero %}{{ domicilio.numero }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-6 col-md-3">
+                <p class="small text-muted mb-0">Código postal</p>
+                <p class="fw-semibold mb-0 font-monospace">
+                    {% if domicilio.codigo_postal %}{{ domicilio.codigo_postal }}{% else %}<span class="text-muted fst-italic fw-normal">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-md-4">
+                <p class="small text-muted mb-0">Colonia</p>
+                <p class="fw-semibold mb-0">
+                    {% if domicilio.colonia %}{{ domicilio.colonia }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-md-4">
+                <p class="small text-muted mb-0">Estado</p>
+                <p class="fw-semibold mb-0">
+                    {% if domicilio.estado %}{{ domicilio.estado }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+            <div class="col-12 col-md-4">
+                <p class="small text-muted mb-0">País</p>
+                <p class="fw-semibold mb-0">
+                    {% if domicilio.pais %}{{ domicilio.pais }}{% else %}<span class="text-muted fst-italic">No registrado</span>{% endif %}
+                </p>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0 fst-italic">No registrado.</p>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Sección 3: Información académica ─────────────────────────────── #}
+<div class="card card-soft mb-2">
+    <div class="card-body p-2">
+        <h2 class="h5 mb-2 border-bottom pb-1"><strong>Información académica</strong></h2>
+
+        {# ── Inscripción activa ── #}
+        {% if inscripcion_activa %}
+        {% with insc=inscripcion_activa %}
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-sm-6 col-md-3">
+                <p class="small text-muted mb-0">Curso inscrito</p>
+                <p class="fw-semibold mb-0">
+                    <span class="badge bg-secondary" style="font-size:.75rem;">
+                        {{ insc.grupo.curso_ref.codigo }}
+                    </span><br>
+                    <small>{{ insc.grupo.curso_ref.nombre }}</small>
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-2">
+                <p class="small text-muted mb-0">Grupo</p>
+                <p class="fw-semibold mb-0">
+                    Grupo {{ insc.grupo.pk }}<br>
+                    <small class="text-muted">{{ insc.grupo.periodo_ref.codigo }}</small>
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4">
+                <p class="small text-muted mb-0">Horario</p>
+                <p class="fw-semibold mb-0 lh-sm">
+                    {% for h in insc.grupo.horarios_activos %}
+                        <span class="d-block">
+                            {{ h.get_dia_display }}
+                            {{ h.hora_inicio|time:"H:i" }}-{{ h.hora_fin|time:"H:i" }}
+                        </span>
+                    {% empty %}
+                        <span class="badge bg-secondary-subtle text-secondary border" style="font-size:.72rem;">Horario por definir</span>
+                    {% endfor %}
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <p class="small text-muted mb-0">Estado de inscripción</p>
+                <p class="fw-semibold mb-0">
+                    <span class="badge
+                        {% if insc.estado == 'activa' %}bg-success
+                        {% elif insc.estado == 'baja' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ insc.get_estado_display }}
+                    </span><br>
+                    <small class="text-muted">Inscrito el {{ insc.fecha_inscripcion|date:"d/m/Y" }}</small>
+                </p>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <p class="small text-muted mb-0">Calificación</p>
+                <p class="fw-semibold mb-0">
+                    {% if calificacion_activa and calificacion_activa.valor is not None %}
+                        <span class="badge bg-primary" style="font-size:.85rem;">{{ calificacion_activa.valor }}</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark" style="font-size:.75rem;">Falta capturar calificación</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endwith %}
+        {% else %}
+        <p class="text-muted small fst-italic mb-3">Sin inscripción activa.</p>
+        {% endif %}
+
+        {# ── Historial completo ── #}
+        {% if inscripciones %}
+        <p class="small fw-semibold text-muted mb-1 border-bottom pb-1">Historial de inscripciones</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Curso</th>
+                        <th>Grupo</th>
+                        <th>Período</th>
+                        <th>Horario</th>
+                        <th>Estado</th>
+                        <th>Inscrito el</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for insc in inscripciones %}
+                    <tr>
+                        <td>
+                            {% if insc.grupo.curso_ref %}
+                                <span class="badge bg-secondary" style="font-size:.7rem;">
+                                    {{ insc.grupo.curso_ref.codigo }}
+                                </span><br>
+                                <small class="text-muted">{{ insc.grupo.curso_ref.nombre }}</small>
+                            {% else %}
+                                <span class="text-muted fst-italic small">No registrado</span>
+                            {% endif %}
+                        </td>
+                        <td>Grupo {{ insc.grupo.pk }}</td>
+                        <td>
+                            {% if insc.grupo.periodo_ref %}
+                                {{ insc.grupo.periodo_ref.codigo }}
+                            {% else %}
+                                <span class="text-muted fst-italic small">No registrado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% for h in insc.grupo.horarios_activos %}
+                                <div class="small">
+                                    {{ h.get_dia_display }}
+                                    {{ h.hora_inicio|time:"H:i" }}-{{ h.hora_fin|time:"H:i" }}
+                                </div>
+                            {% empty %}
+                                <span class="badge bg-secondary-subtle text-secondary border" style="font-size:.65rem;">Horario por definir</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if insc.estado == 'activa' %}bg-success
+                                {% elif insc.estado == 'baja' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ insc.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>{{ insc.fecha_inscripcion|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Sección 4: Acceso a documentos ──────────────────────────────── #}
+<div class="card card-soft mb-2">
+    <div class="card-body p-2">
+        <h2 class="h5 mb-2 border-bottom pb-1"><strong>Acceso a documentos</strong></h2>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            {% if inscripcion_activa %}
+            <a class="btn btn-outline-secondary btn-sm"
+               href="/panel/escolar/alumnos/{{ alumno.pk }}/boleta/">
+                Boleta PDF
+            </a>
+            {% else %}
+            <span class="btn btn-outline-secondary btn-sm disabled" aria-disabled="true"
+                  title="El alumno necesita una inscripción activa para generar la boleta.">
+                Boleta PDF
+            </span>
+            {% endif %}
+            <a class="btn btn-outline-secondary btn-sm"
+               href="/panel/ventas/estado-cuenta/">
+                Estado de cuenta
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

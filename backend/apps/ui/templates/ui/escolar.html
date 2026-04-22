@@ -1,0 +1,152 @@
+{% extends "ui/base.html" %}
+{% block title %}Escolar | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+        <div>
+            <h1 class="h4 mb-1">Escolar</h1>
+            <p class="muted mb-0">Alumnos, grupos, inscripciones y calificaciones en un solo lugar.</p>
+        </div>
+        <div class="text-md-end">
+            <a class="btn btn-outline-secondary btn-sm" href="/panel/">Volver al panel</a>
+        </div>
+    </div>
+</div>
+
+{# ── Indicadores KPI ─────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+
+  {# Alumnos con inscripción activa #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/alumnos/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-primary bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-primary">&#128100;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-primary">{{ kpi.alumnos_inscritos }}</div>
+            <div class="small text-muted lh-sm">Alumnos con inscripción activa</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Grupos activos totales #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/grupos/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-success bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-success">&#127979;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-success">{{ kpi.grupos_activos }}</div>
+            <div class="small text-muted lh-sm">Grupos activos</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Grupos con lugar disponible #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/grupos/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-info bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-info">&#128203;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-info">{{ kpi.grupos_con_lugar }}</div>
+            <div class="small text-muted lh-sm">Grupos con lugares disponibles</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Grupos llenos #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/grupos/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-danger bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-danger">&#128992;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-danger">{{ kpi.grupos_llenos }}</div>
+            <div class="small text-muted lh-sm">Grupos llenos</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Inscripciones sin calificación #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/calificaciones/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-warning bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-warning">&#128203;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-warning">{{ kpi.insc_sin_calificacion }}</div>
+            <div class="small text-muted lh-sm">Alumnos sin calificación</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Grupos sin horario #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/grupos/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-secondary bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-secondary">&#128337;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-secondary">{{ kpi.grupos_sin_horario }}</div>
+            <div class="small text-muted lh-sm">Grupos sin horario configurado</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  {# Grupos pendientes de acta #}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a href="/panel/escolar/calificaciones/" class="text-decoration-none">
+      <div class="card card-soft h-100">
+        <div class="card-body d-flex align-items-center gap-3 py-3">
+          <div class="rounded-3 bg-danger bg-opacity-10 p-3 flex-shrink-0 text-center" style="min-width:3rem;">
+            <span class="fs-4 text-danger">&#128196;</span>
+          </div>
+          <div>
+            <div class="h3 fw-bold mb-0 text-danger">{{ kpi.grupos_pendientes_acta }}</div>
+            <div class="small text-muted lh-sm">Grupos sin acta de cierre</div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+{# ── Navegación rápida ───────────────────────────────────────────────── #}
+<div class="card card-soft mb-3">
+    <div class="card-body">
+        <p class="small text-muted mb-2">Módulos</p>
+        <div class="d-flex flex-wrap gap-2">
+            {% for c in cards %}
+            <a class="btn btn-outline-secondary btn-sm" href="{{ c.href }}" title="{{ c.desc }}">{{ c.title }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

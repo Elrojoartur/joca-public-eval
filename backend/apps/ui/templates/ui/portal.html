@@ -1,0 +1,180 @@
+{% extends 'ui/base.html' %}
+{% load static %}
+{% block title %}Portal | {{ SITE_NAME }}{% endblock %}
+
+{% block topbar_message %}
+<div class="text-white lh-sm">
+  <div class="fw-semibold">Bienvenido a CCENT Nikola Tesla</div>
+  <div style="font-size:.85rem; opacity:.9;">
+    Acompañamiento escolar, grupos activos y servicios con atención cercana.
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container py-2">
+  <style>
+    .portal-compact-card .card-body {
+      padding: 0.8rem 0.9rem;
+    }
+
+    .portal-footer {
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+    }
+
+    .portal-footer .small {
+      line-height: 1.35;
+    }
+
+    /* Carrusel de cursos */
+    .curso-carousel .carousel-inner {
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .curso-carousel .carousel-item img {
+      height: calc(100vh - 260px);
+      max-height: 360px;
+      min-height: 180px;
+      width: 100%;
+      object-fit: contain;
+      object-position: center;
+      background: #0f172a;
+      display: block;
+    }
+
+    .curso-carousel .curso-slide-empty {
+      height: calc(100vh - 260px);
+      max-height: 360px;
+      min-height: 180px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .curso-carousel .carousel-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.85rem;
+      background: linear-gradient(transparent, rgba(10, 15, 28, 0.78));
+      text-align: left;
+      border-radius: 0 0 0.75rem 0.75rem;
+    }
+
+    .curso-carousel .carousel-indicators {
+      bottom: -1.4rem;
+      margin-bottom: 0;
+    }
+
+    .curso-carousel .carousel-indicators [data-bs-target] {
+      background-color: #64748b;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      opacity: 0.45;
+    }
+
+    .curso-carousel .carousel-indicators .active {
+      opacity: 1;
+      background-color: #0f172a;
+    }
+
+    .curso-carousel .carousel-control-prev,
+    .curso-carousel .carousel-control-next {
+      width: 9%;
+      opacity: 0.65;
+    }
+  </style>
+
+  <div class="row g-3 align-items-start">
+    <div class="col-12">
+      <section id="cursos" class="card card-soft portal-compact-card mb-2">
+        <div class="card-body">
+          <!-- Cabecera oferta educativa con accesos rápidos -->
+          <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+            <h2 class="h5 mb-0"><a href="#cursos" class="text-decoration-none text-reset">Oferta educativa</a></h2>
+            <div class="d-flex gap-1 flex-wrap align-items-center">
+              <a class="btn btn-outline-primary btn-sm" href="/portal/grupos/">
+                Ver grupos{% if grupos_con_cupo %}<span class="badge bg-success ms-1" style="font-size:.6rem;">{{ grupos_con_cupo }}</span>{% endif %}
+              </a>
+              <a class="btn btn-outline-secondary btn-sm" href="/portal/avisos/">Avisos</a>
+              <a class="btn btn-outline-secondary btn-sm" href="/portal/faqs/">Preguntas frecuentes</a>
+              <a class="btn btn-outline-secondary btn-sm" href="/portal/contacto/">Contacto</a>
+            </div>
+          </div>
+
+          <!-- Carrusel de cursos (un solo curso visible a la vez) -->
+          {% if cursos_page %}
+          <div id="cursosCarrusel" class="carousel slide curso-carousel" data-bs-ride="false">
+            <div class="carousel-indicators">
+              {% for c in cursos_page %}
+              <button type="button" data-bs-target="#cursosCarrusel"
+                data-bs-slide-to="{{ forloop.counter0 }}"
+                {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                aria-label="{{ c.nombre }}"></button>
+              {% endfor %}
+            </div>
+
+            <div class="carousel-inner">
+              {% for c in cursos_page %}
+              <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                {% if c.imagen %}
+                <img src="{% static c.imagen %}" alt="{{ c.nombre }}">
+                {% else %}
+                <div class="curso-slide-empty">
+                  <span class="text-muted small">Sin imagen</span>
+                </div>
+                {% endif %}
+                <div class="carousel-caption">
+                  <h3 class="h6 mb-0 text-white fw-semibold">{{ c.nombre }}</h3>
+                  {% if c.descripcion %}
+                  <p class="mb-2 text-white-50 small">{{ c.descripcion }}</p>
+                  {% endif %}
+                  <a class="btn btn-sm btn-light" style="position:relative;z-index:10;"
+                     href="/portal/cursos/{{ c.id }}/">Ver curso</a>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            {% if cursos_page|length > 1 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#cursosCarrusel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#cursosCarrusel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Siguiente</span>
+            </button>
+            {% endif %}
+          </div>
+          {% else %}
+          <p class="small text-muted mb-0 mt-1">No hay cursos para mostrar por ahora.</p>
+          {% endif %}
+
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer class="portal-footer">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+      <div class="small">
+        <div class="fw-semibold">{{ SITE_NAME }}</div>
+        <div>Dirección: {{ contacto_direccion }}</div>
+        <div>Tel: {{ contacto_telefono }} · WhatsApp: {{ contacto_whatsapp }} · Correo: {{ contacto_correo }}</div>
+      </div>
+      <div class="small d-flex flex-wrap gap-3">
+        <a class="text-decoration-none" href="/portal/contacto/">Contacto</a>
+        <a class="text-decoration-none" href="https://www.facebook.com/ccent.escuelaelectronica/?locale=es_LA" target="_blank" rel="noopener">Facebook</a>
+      </div>
+    </div>
+  </footer>
+</div>
+{% endblock %}

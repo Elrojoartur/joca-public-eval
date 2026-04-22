@@ -1,0 +1,46 @@
+{% extends 'ui/base.html' %}
+{% block title %}Avisos | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="card card-soft mb-3">
+    <div class="card-body d-flex justify-content-between align-items-center gap-2 flex-wrap">
+      <div>
+        <h1 class="h4 mb-1">Avisos vigentes</h1>
+        <p class="text-muted mb-0">Consulta los avisos vigentes de la institución.</p>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="/portal/">Volver al portal</a>
+    </div>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body">
+      <div class="list-group list-group-flush">
+        {% for aviso in avisos_page %}
+        <div class="list-group-item px-0 py-2">
+          <div class="fw-semibold">{{ aviso.titulo }}</div>
+          <div class="small text-muted mb-1">{{ aviso.fecha }}</div>
+          <div class="small">{{ aviso.cuerpo }}</div>
+        </div>
+        {% empty %}
+        <p class="small text-muted mb-0">Sin avisos publicados por ahora.</p>
+        {% endfor %}
+      </div>
+
+      {% if avisos_page.paginator.num_pages > 1 %}
+      <nav class="mt-3" aria-label="Paginación de avisos">
+        <ul class="pagination pagination-sm mb-0">
+          {% if avisos_page.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ avisos_page.previous_page_number }}">Anterior</a></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Página {{ avisos_page.number }} de {{ avisos_page.paginator.num_pages }}</span></li>
+          {% if avisos_page.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ avisos_page.next_page_number }}">Siguiente</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

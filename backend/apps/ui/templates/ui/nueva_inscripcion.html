@@ -1,0 +1,84 @@
+{% extends 'ui/base.html' %}
+{% load static %}
+{% block title %}Nueva inscripción | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+    <div>
+        <h1 class="h4 mb-1">Nueva inscripción</h1>
+        <p class="muted mb-0">Selecciona alumno y grupo. Si vienes desde un grupo, el grupo queda fijado para evitar
+            mezclar.</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/inscripciones/">Volver a grupos</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-7">
+        <div class="card card-soft">
+            <div class="card-body">
+                <form method="post" class="vstack gap-3">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="form-label">Alumno</label>
+                        <input class="form-control" name="alumno" placeholder="Nombre del alumno" required>
+                        <div class="form-text">Solo para demo: ingresa un nombre para confirmar.</div>
+                    </div>
+
+                    <div>
+                        <label class="form-label">Grupo</label>
+                        <select class="form-select" name="grupo" {% if selected_id %}disabled{% endif %} required>
+                            <option value="" disabled {% if not selected_id %}selected{% endif %}>Selecciona un grupo
+                            </option>
+                            {% for g in grupos %}
+                            <option value="{{ g.id }}" {% if g.id == selected_id %}selected{% endif %}>
+                                {{ g.periodo }} · Grupo {{ g.grupo }} — Cupo: {{ g.cupo }} | Disponibles: {{
+                                g.disponibles }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if selected_id %}
+                        <input type="hidden" name="grupo" value="{{ selected_id }}">
+                        <div class="form-text">Grupo fijado desde el detalle. No se permiten cambios en este flujo.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-joca" type="submit">Confirmar inscripción</button>
+                        <button class="btn btn-outline-secondary" type="button"
+                            onclick="history.back()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card card-soft h-100">
+            {% if selected_group %}
+            <img src="{% static selected_group.imagen %}" class="card-img-top" alt="{{ selected_group.titulo }}">
+            {% endif %}
+            <div class="card-body">
+                {% if selected_group %}
+                <h2 class="h6 mb-1">{{ selected_group.titulo }}</h2>
+                <p class="muted small mb-2">Período {{ selected_group.periodo }} · Grupo {{ selected_group.grupo }}</p>
+                <p class="small mb-3">{{ selected_group.descripcion }}</p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small muted">Cupo: {{ selected_group.cupo }} · Disponibles: {{
+                        selected_group.disponibles }}</span>
+                    {% if selected_group.disponibles|default:0 > 0 %}
+                    <span class="badge text-bg-success">Disponible</span>
+                    {% else %}
+                    <span class="badge text-bg-secondary">Sin cupo</span>
+                    {% endif %}
+                </div>
+                <div class="small text-muted">El grupo se asigna sin mezclar con otros en este flujo.</div>
+                {% else %}
+                <h2 class="h6 mb-2">Elige un grupo</h2>
+                <p class="small text-muted mb-0">Al seleccionar un grupo, verás su descripción y cupo aquí.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

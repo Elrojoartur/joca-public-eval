@@ -1,0 +1,31 @@
+{% extends "ui/base.html" %}
+{% block title %}Gobierno | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:panel' %}">Inicio</a></li>
+    <li class="breadcrumb-item active">Configuración y Gobierno</li>
+  </ol>
+</nav>
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="h4 fw-bold mb-1">Configuración y Gobierno</h1>
+      <p class="text-muted mb-0">Seguridad, auditoría y parámetros del sistema.</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:panel' %}">Volver al panel</a>
+  </div>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body">
+    <p class="small text-muted mb-2">Carpetas de navegación</p>
+    <div class="d-flex flex-wrap gap-2">
+      {% for c in cards %}
+      <a class="btn btn-outline-secondary btn-sm" href="{{ c.href }}" title="{{ c.desc }}">{{ c.title }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

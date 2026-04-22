@@ -1,0 +1,232 @@
+{% extends "ui/base.html" %}
+{% block title %}Control de cuentas | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h4 mb-1">Control de creación de cuentas</h1>
+            <p class="muted mb-0">Pantalla interna: Administrativo Comercial y Superusuario.</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+    </div>
+</div>
+
+<div class="card card-soft p-4">
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-md-4">
+            <label class="form-label">Tipo de cuenta</label>
+            <select class="form-select" name="tipo" required>
+                <option value="alumno">Alumno</option>
+                <option value="cliente">Cliente</option>
+                <option value="usuario">Usuario (solo superuser)</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Usuario</label>
+            <input class="form-control" name="username" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Correo</label>
+            <input class="form-control" type="email" name="correo" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Contraseña</label>
+            <input class="form-control" type="password" name="password" required>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Rol destino (superuser)</label>
+            <select class="form-select" name="role_code">
+                <option value="">Sin rol especifico</option>
+                {% for r in roles %}
+                <option value="{{ r.codigo }}">{{ r.nombre }} ({{ r.codigo }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="is_staff" id="id_staff">
+            <label class="form-check-label" for="id_staff">is_staff (solo superuser)</label>
+        </div>
+
+        <div class="col-md-2 form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="is_superuser" id="id_super">
+            <label class="form-check-label" for="id_super">is_superuser (solo superuser)</label>
+        </div>
+
+        <div class="col-12">
+            <hr>
+        </div>
+        <div class="col-12">
+            <h2 class="h6">Datos adicionales para Alumno</h2>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Matricula</label>
+            <input class="form-control" name="matricula" placeholder="Opcional; usa username si vacío">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Nombres</label>
+            <input class="form-control" name="nombres">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Apellido paterno</label>
+            <input class="form-control" name="apellido_paterno">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Apellido materno</label>
+            <input class="form-control" name="apellido_materno">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Teléfono</label>
+            <input class="form-control" name="telefono">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Grupo escolar para inscripción inicial (requerido para alumno)</label>
+            <select class="form-select" name="grupo_id">
+                <option value="">Selecciona grupo...</option>
+                {% for g in grupos_escolares %}
+                <option value="{{ g.id }}">
+                    {{ g.periodo_ref.codigo }} | {{ g.curso_ref.codigo }} | {{ g.get_turno_display }} | Cupo disponible {{ g.cupo_disponible }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 form-check mt-4">
+            <input class="form-check-input" type="checkbox" name="requiere_factura_alumno" id="id_requiere_factura_alumno">
+            <label class="form-check-label" for="id_requiere_factura_alumno">Requiere factura (agrega IVA 16%)</label>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">CURP (opcional alumno)</label>
+            <input class="form-control" name="curp" maxlength="18" placeholder="CURP oficial de 18 caracteres">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">RFC (opcional alumno)</label>
+            <input class="form-control" name="rfc" maxlength="13" placeholder="RFC vigente (12 o 13)">
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-secondary" type="button" id="btn-sugerir-alumno">Generar sugerencia RFC/CURP alumno</button>
+        </div>
+
+        <div class="col-12">
+            <hr>
+        </div>
+        <div class="col-12">
+            <h2 class="h6">Datos fiscales opcionales para Cliente</h2>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">RFC cliente</label>
+            <input class="form-control" name="cliente_rfc" maxlength="13" placeholder="RFC vigente (12 o 13)">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">CURP cliente</label>
+            <input class="form-control" name="cliente_curp" maxlength="18" placeholder="CURP oficial de 18 caracteres">
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-secondary" type="button" id="btn-sugerir-cliente">Generar sugerencia RFC/CURP cliente</button>
+        </div>
+
+        <div class="col-12">
+            <button class="btn btn-joca text-white" type="submit">Crear cuenta interna</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    function sanitizeWord(value) {
+        return (value || '')
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^A-ZÑ\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function firstVowel(text) {
+        const src = (text || '').toUpperCase();
+        for (let i = 1; i < src.length; i += 1) {
+            if ('AEIOU'.includes(src[i])) {
+                return src[i];
+            }
+        }
+        return 'X';
+    }
+
+    function firstConsonant(text) {
+        const src = (text || '').toUpperCase();
+        for (let i = 1; i < src.length; i += 1) {
+            if ('BCDFGHJKLMNÑPQRSTVWXYZ'.includes(src[i])) {
+                return src[i];
+            }
+        }
+        return 'X';
+    }
+
+    function buildRfcSuggestion(nombreCompleto) {
+        const parts = sanitizeWord(nombreCompleto).split(' ').filter(Boolean);
+        const p = parts[0] || 'X';
+        const m = parts[1] || 'X';
+        const n = parts[2] || parts[0] || 'X';
+        const prefix = ((p[0] || 'X') + firstVowel(p) + (m[0] || 'X') + (n[0] || 'X')).slice(0, 4);
+        return prefix + '010101' + 'AAA';
+    }
+
+    function buildCurpSuggestion(nombreCompleto) {
+        const parts = sanitizeWord(nombreCompleto).split(' ').filter(Boolean);
+        const p = parts[0] || 'X';
+        const m = parts[1] || 'X';
+        const n = parts[2] || parts[0] || 'X';
+        const initials = (p[0] || 'X') + firstVowel(p) + (m[0] || 'X') + (n[0] || 'X');
+        const inner = firstConsonant(p) + firstConsonant(m) + firstConsonant(n);
+        return initials + '010101' + 'H' + 'NE' + inner + '00';
+    }
+
+    const btnAlumno = document.getElementById('btn-sugerir-alumno');
+    const btnCliente = document.getElementById('btn-sugerir-cliente');
+
+    if (btnAlumno) {
+        btnAlumno.addEventListener('click', function () {
+            const nombre = document.querySelector('input[name="nombres"]')?.value || '';
+            const ap = document.querySelector('input[name="apellido_paterno"]')?.value || '';
+            const am = document.querySelector('input[name="apellido_materno"]')?.value || '';
+            const source = [ap, am, nombre].join(' ').trim();
+            const rfc = document.querySelector('input[name="rfc"]');
+            const curp = document.querySelector('input[name="curp"]');
+            if (rfc && !rfc.value.trim()) {
+                rfc.value = buildRfcSuggestion(source);
+            }
+            if (curp && !curp.value.trim()) {
+                curp.value = buildCurpSuggestion(source);
+            }
+        });
+    }
+
+    if (btnCliente) {
+        btnCliente.addEventListener('click', function () {
+            const username = document.querySelector('input[name="username"]')?.value || '';
+            const correo = document.querySelector('input[name="correo"]')?.value || '';
+            const source = username || correo.split('@')[0] || 'CLIENTE';
+            const rfc = document.querySelector('input[name="cliente_rfc"]');
+            const curp = document.querySelector('input[name="cliente_curp"]');
+            if (rfc && !rfc.value.trim()) {
+                rfc.value = buildRfcSuggestion(source);
+            }
+            if (curp && !curp.value.trim()) {
+                curp.value = buildCurpSuggestion(source);
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+[
+    {
+        "id": "faq-01",
+        "categoria": "Inscripciones",
+        "pregunta": "¿Cómo me inscribo a un curso?",
+        "respuesta": "Ingresa al portal, elige el curso y completa la inscripción; te confirmamos por correo.",
+        "activa": true
+    },
+    {
+        "id": "faq-02",
+        "categoria": "Inscripciones",
+        "pregunta": "¿Puedo apartar lugar?",
+        "respuesta": "Sí, puedes preinscribirte y confirmar tu pago antes del inicio de clases.",
+        "activa": true
+    },
+    {
+        "id": "faq-03",
+        "categoria": "Horarios",
+        "pregunta": "¿Tienen horarios vespertinos?",
+        "respuesta": "Contamos con horarios matutinos y vespertinos según el curso.",
+        "activa": true
+    },
+    {
+        "id": "faq-04",
+        "categoria": "Horarios",
+        "pregunta": "¿Hay clases en línea?",
+        "respuesta": "Algunos módulos se imparten en línea; revisa la ficha del curso.",
+        "activa": true
+    },
+    {
+        "id": "faq-05",
+        "categoria": "Pagos",
+        "pregunta": "¿Se puede pagar en parcialidades?",
+        "respuesta": "Sí, ofrecemos opciones de pago en parcialidades para ciertos cursos.",
+        "activa": true
+    },
+    {
+        "id": "faq-06",
+        "categoria": "Pagos",
+        "pregunta": "¿Qué formas de pago aceptan?",
+        "respuesta": "Aceptamos pagos electrónicos y transferencias.",
+        "activa": true
+    },
+    {
+        "id": "faq-07",
+        "categoria": "Materiales",
+        "pregunta": "¿Incluyen material de práctica?",
+        "respuesta": "Los cursos incluyen material de práctica esencial; algunos requieren herramientas personales.",
+        "activa": true
+    },
+    {
+        "id": "faq-08",
+        "categoria": "Materiales",
+        "pregunta": "¿Entregan constancia?",
+        "respuesta": "Sí, al concluir y cumplir los requisitos académicos.",
+        "activa": true
+    },
+    {
+        "id": "faq-09",
+        "categoria": "Becas",
+        "pregunta": "¿Ofrecen becas?",
+        "respuesta": "Disponemos de becas parciales; consulta los requisitos vigentes.",
+        "activa": true
+    },
+    {
+        "id": "faq-10",
+        "categoria": "General",
+        "pregunta": "¿Puedo agendar una visita?",
+        "respuesta": "Claro, agenda tu visita desde la sección de contacto.",
+        "activa": true
+    }
+]

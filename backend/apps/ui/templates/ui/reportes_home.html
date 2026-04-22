@@ -1,0 +1,51 @@
+{% extends "ui/base.html" %}
+{% block title %}Tablero | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h1 class="h4 mb-1">Tablero</h1>
+      <p class="muted mb-0">Indicadores rápidos del sistema.</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/">Volver al panel</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-12 col-lg-6">
+    <div class="card card-soft">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Escolar</h2>
+        <ul class="mb-0">
+          <li>Alumnos: <strong>{{ kpi.alumnos }}</strong></li>
+          <li>Grupos: <strong>{{ kpi.grupos }}</strong></li>
+          <li>Inscripciones: <strong>{{ kpi.inscripciones }}</strong></li>
+          <li>Calificaciones: <strong>{{ kpi.calificaciones }}</strong></li>
+          <li>Actas: <strong>{{ kpi.actas }}</strong></li>
+        </ul>
+        <div class="mt-3">
+          <a class="btn btn-joca btn-sm text-white" href="/panel/reportes/academico/">Ver reporte académico</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <div class="card card-soft">
+      <div class="card-body">
+        <h2 class="h6 mb-3">Ventas</h2>
+        <ul class="mb-0">
+          <li>Conceptos: <strong>{{ kpi.conceptos }}</strong></li>
+          <li>Órdenes: <strong>{{ kpi.ordenes }}</strong></li>
+          <li>Pagos: <strong>{{ kpi.pagos }}</strong></li>
+          <li>Tickets: <strong>{{ kpi.tickets }}</strong></li>
+        </ul>
+        <div class="mt-3">
+          <a class="btn btn-joca btn-sm text-white" href="/panel/reportes/comercial/">Ver reporte comercial</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

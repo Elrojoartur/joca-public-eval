@@ -1,0 +1,46 @@
+{% extends "ui/base.html" %}
+{% block title %}Excepciones | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item active">Excepciones controladas</li>
+  </ol>
+</nav>
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div>
+      <h1 class="h4 fw-bold mb-1">Excepciones controladas</h1>
+      <p class="text-muted mb-0">Mapa de errores previstos, su manejo y ubicación técnica.</p>
+    </div>
+    <div class="text-md-end">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_home' %}">Volver a Gobierno</a>
+    </div>
+  </div>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body">
+    <div class="small text-muted">Última actualización: {{ updated_at|date:"d/m/Y H:i" }}</div>
+  </div>
+</div>
+
+{% for item in excepciones %}
+<div class="card card-soft mb-3">
+  <div class="card-body">
+    <h2 class="h6 mb-2">{{ item.nombre }}</h2>
+    <p class="mb-1"><strong>Modulo:</strong> {{ item.modulo }}</p>
+    <p class="mb-1"><strong>Origen:</strong> {{ item.origen }}</p>
+    <p class="mb-2"><strong>Manejo:</strong> {{ item.manejo }}</p>
+
+    <div class="small text-muted">Referencias:</div>
+    <ul class="mb-0">
+      {% for ref in item.referencias %}
+      <li><code>{{ ref }}</code></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

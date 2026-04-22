@@ -1,0 +1,44 @@
+{% extends 'ui/base.html' %}
+{% block title %}Reportes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Reportes y tablero</h1>
+<p class="text-muted">Filtros por fecha + layout limpio (recomendación del comité).</p>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-3">
+        <label class="form-label">Desde</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Hasta</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Categoría</label>
+        <select class="form-select">
+          <option>General</option>
+          <option>Escolar</option>
+          <option>Ventas</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" onclick="jocaToast('Listo: reporte generado (demo).')">Generar</button>
+      </div>
+    </div>
+    <hr>
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="p-3 border rounded bg-white">KPI 1 (demo)</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="p-3 border rounded bg-white">KPI 2 (demo)</div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="p-3 border rounded bg-white">KPI 3 (demo)</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

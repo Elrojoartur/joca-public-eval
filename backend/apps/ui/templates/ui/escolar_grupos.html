@@ -1,0 +1,345 @@
+{% extends 'ui/base.html' %}
+{% block title %}Grupos | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<style>
+    #grupos-form-folder .accordion-body,
+    #grupos-filtros-folder .accordion-body,
+    #grupos-lista-folder .accordion-body {
+        padding: .65rem .75rem;
+    }
+
+    #grupos-form-folder p {
+        margin-bottom: .45rem;
+    }
+
+    #grupos-form-folder label,
+    #grupos-filtros-folder label {
+        margin-bottom: .15rem;
+        font-size: .82rem;
+        font-weight: 600;
+    }
+
+    #grupos-form-folder .form-control,
+    #grupos-form-folder .form-select,
+    #grupos-filtros-folder .form-control,
+    #grupos-filtros-folder .form-select {
+        min-height: calc(1.5em + .35rem + 2px);
+        padding: .18rem .5rem;
+        font-size: .875rem;
+    }
+
+    #grupos-form-folder .helptext {
+        display: block;
+        margin-top: .1rem;
+        font-size: .72rem;
+        color: #6c757d;
+    }
+
+    #grupos-lista-folder .table td,
+    #grupos-lista-folder .table th {
+        padding-top: .4rem;
+        padding-bottom: .4rem;
+        vertical-align: middle;
+    }
+
+    .folder-shortcuts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
+
+    #gruposFolders .accordion-header {
+        display: none;
+    }
+</style>
+
+<div class="page-header mb-1">
+    <h1 class="h4 mb-1">Grupos</h1>
+    <p class="muted mb-0">Crea y actualiza grupos activos. Recuerda mantener el cupo correcto.</p>
+</div>
+
+{% if messages %}
+    {% for m in messages %}
+        <div class="alert alert-{{ m.tags }} py-1 px-2 mb-1">{{ m }}</div>
+    {% endfor %}
+{% endif %}
+
+{# ── Hint post-creación: revisar horario ── #}
+{% if edit_id %}
+<div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-2 py-2 px-3 mb-2" role="alert">
+  <div>
+    <strong>&#128337; Grupo {{ edit_id }} listo.</strong>
+    Se asignó un horario predeterminado. Revísalo y guarda si necesitas ajustarlo.
+  </div>
+  <a class="btn btn-sm btn-outline-secondary flex-shrink-0"
+     href="/panel/escolar/grupos/">
+    Ver todos los grupos
+  </a>
+</div>
+{% endif %}
+
+<div class="card card-soft mb-2">
+    <div class="card-body py-1 px-2">
+        <p class="small text-muted mb-1">Carpetas de navegación</p>
+        <div class="folder-shortcuts">
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                data-bs-target="#grupos-form-folder" aria-expanded="false" aria-controls="grupos-form-folder">
+                Formulario de grupo
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                data-bs-target="#grupos-filtros-folder" aria-expanded="true" aria-controls="grupos-filtros-folder">
+                Generación y filtros
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse"
+                data-bs-target="#grupos-lista-folder" aria-expanded="true" aria-controls="grupos-lista-folder">
+                Lista de grupos
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="accordion" id="gruposFolders">
+    <div class="accordion-item mb-2">
+        <h2 class="accordion-header" id="grupos-form-heading">
+            <button class="accordion-button py-2 {% if not edit_id %}collapsed{% endif %}" type="button"
+                data-bs-toggle="collapse" data-bs-target="#grupos-form-folder"
+                aria-expanded="{% if edit_id %}true{% else %}false{% endif %}" aria-controls="grupos-form-folder">
+                {{ edit_id|yesno:"Editar,Agregar" }} grupo
+            </button>
+        </h2>
+        <div id="grupos-form-folder" class="accordion-collapse collapse {% if edit_id %}show{% endif %}"
+            aria-labelledby="grupos-form-heading">
+            <div class="accordion-body">
+                <form method="post" class="vstack gap-0">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-warning py-1 px-2 mb-1" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    {{ form.as_p }}
+                    <div class="d-flex gap-1 flex-wrap mt-1">
+                        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+                        <a class="btn btn-outline-secondary btn-sm" href="/panel/escolar/grupos/">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item mb-2">
+        <h2 class="accordion-header" id="grupos-filtros-heading">
+            <button class="accordion-button py-2 {% if edit_id %}collapsed{% endif %}" type="button"
+                data-bs-toggle="collapse" data-bs-target="#grupos-filtros-folder"
+                aria-expanded="{% if edit_id %}false{% else %}true{% endif %}" aria-controls="grupos-filtros-folder">
+                Generación y filtros
+            </button>
+        </h2>
+        <div id="grupos-filtros-folder" class="accordion-collapse collapse {% if not edit_id %}show{% endif %}"
+            aria-labelledby="grupos-filtros-heading">
+            <div class="accordion-body">
+                <form method="post" action="{% url 'ui:escolar_grupos_generar' %}" class="d-flex gap-1 mb-2 flex-wrap">
+                    {% csrf_token %}
+                    <select name="periodo" class="form-select form-select-sm" required style="max-width: 320px;">
+                        <option value="">Selecciona periodo...</option>
+                        {% for p in periodos %}
+                        <option value="{{ p }}" {% if periodo_filtro == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-primary btn-sm" type="submit">Generar grupos</button>
+                </form>
+
+                <form method="get" class="row g-1 align-items-end">
+                    <div class="col-12 col-lg-4">
+                        <label class="form-label">Período</label>
+                        <select name="periodo" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            {% for p in periodos %}
+                            <option value="{{ p }}" {% if periodo_filtro == p %}selected{% endif %}>{{ p }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            <option value="1" {% if estado_filtro == '1' %}selected{% endif %}>Activo</option>
+                            <option value="0" {% if estado_filtro == '0' %}selected{% endif %}>Inactivo</option>
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-lg-2">
+                        <label class="form-label">Turno</label>
+                        <select name="turno" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            {% for code, label in turno_choices %}
+                            <option value="{{ code }}" {% if turno_filtro == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-6 col-lg-1">
+                        <label class="form-label">Desde</label>
+                        <input type="date" class="form-control form-control-sm" name="desde" value="{{ creado_desde|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="col-6 col-lg-1">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" class="form-control form-control-sm" name="hasta" value="{{ creado_hasta|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="col-12 col-lg-2 d-flex gap-1 flex-wrap justify-content-lg-end">
+                        <button class="btn btn-outline-primary btn-sm px-2" type="submit">Filtrar</button>
+                        <a class="btn btn-outline-secondary btn-sm px-2" href="/panel/escolar/grupos/">Limpiar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="accordion-item mb-2">
+        <h2 class="accordion-header" id="grupos-lista-heading">
+            <button class="accordion-button py-2 {% if edit_id %}collapsed{% endif %}" type="button"
+                data-bs-toggle="collapse" data-bs-target="#grupos-lista-folder"
+                aria-expanded="{% if edit_id %}false{% else %}true{% endif %}" aria-controls="grupos-lista-folder">
+                Lista de grupos
+            </button>
+        </h2>
+        <div id="grupos-lista-folder" class="accordion-collapse collapse {% if not edit_id %}show{% endif %}"
+            aria-labelledby="grupos-lista-heading">
+            <div class="accordion-body table-responsive">
+                <table class="table table-sm align-middle mb-1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Curso</th>
+                            <th>Período</th>
+                            <th>Tipo / Turno</th>
+                            <th>Horario</th>
+                            <th class="text-center">Cupo</th>
+                            <th class="text-center">Inscritos</th>
+                            <th class="text-center">Disponible</th>
+                            <th>Estado</th>
+                            <th>Creado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in grupos %}
+                        <tr>
+                            <td>{{ g.id }}</td>
+                            <td>
+                                <span class="badge bg-secondary" style="font-size:.7rem;">{{ g.curso_ref.codigo }}</span><br>
+                                <small class="text-muted">{{ g.curso_ref.nombre }}</small>
+                            </td>
+                            <td>{{ g.periodo_ref.codigo }}</td>
+                            <td>
+                                <span class="d-block small">{{ g.get_tipo_horario_display }}</span>
+                                <small class="text-muted">{{ g.get_turno_display }}</small>
+                            </td>
+                            <td>
+                                {% for h in g.horarios_lista %}
+                                    <div class="small">
+                                        {{ h.get_dia_display }} {{ h.hora_inicio|time:"H:i" }}-{{ h.hora_fin|time:"H:i" }}
+                                        {% if h.aula_ref %}
+                                            <span class="text-muted">({{ h.aula_ref }})</span>
+                                        {% endif %}
+                                    </div>
+                                {% empty %}
+                                    <span class="text-muted fst-italic small">Horario por definir</span>
+                                {% endfor %}
+                            </td>
+                            <td class="text-center">{{ g.cupo }}</td>
+                            <td class="text-center">
+                                <span class="{% if g.inscritos >= g.cupo %}text-danger fw-semibold{% else %}text-body{% endif %}">
+                                    {{ g.inscritos }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                {% if g.cupo_disponible <= 0 %}
+                                    <span class="badge bg-danger">Grupo lleno</span>
+                                {% elif g.cupo_disponible <= 3 %}
+                                    <span class="badge bg-warning text-dark" title="{{ g.cupo_disponible }} lugar{{ g.cupo_disponible|pluralize }} disponible{{ g.cupo_disponible|pluralize }}">
+                                        Últimos {{ g.cupo_disponible }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-success fw-semibold">{{ g.cupo_disponible }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge {% if g.estado == 1 %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ g.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>{{ g.creado_en|date:"d/m/Y" }}</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex flex-nowrap gap-1">
+                                    <a class="btn btn-sm btn-outline-primary py-0 px-2"
+                                       href="/panel/escolar/grupos/?edit={{ g.id }}">
+                                        Editar
+                                    </a>
+                                    <form method="post" action="/panel/escolar/grupos/" class="d-inline mb-0">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delete_id" value="{{ g.id }}">
+                                        <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                                                type="submit"
+                                                onclick="return confirm('¿Eliminar grupo?');">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">Sin grupos registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                {% if grupos.has_other_pages %}
+                <nav aria-label="Paginación de grupos">
+                    <ul class="pagination pagination-sm justify-content-end mb-0">
+                        {% if grupos.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ grupos.previous_page_number }}{% if periodo_filtro %}&periodo={{ periodo_filtro|urlencode }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro|urlencode }}{% endif %}{% if turno_filtro %}&turno={{ turno_filtro|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                                Anterior
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in grupos.paginator.page_range %}
+                            {% if num == grupos.number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num >= grupos.number|add:'-1' and num <= grupos.number|add:'1' %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="?page={{ num }}{% if periodo_filtro %}&periodo={{ periodo_filtro|urlencode }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro|urlencode }}{% endif %}{% if turno_filtro %}&turno={{ turno_filtro|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if grupos.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?page={{ grupos.next_page_number }}{% if periodo_filtro %}&periodo={{ periodo_filtro|urlencode }}{% endif %}{% if estado_filtro %}&estado={{ estado_filtro|urlencode }}{% endif %}{% if turno_filtro %}&turno={{ turno_filtro|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                                Siguiente
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

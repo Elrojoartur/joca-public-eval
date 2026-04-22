@@ -1,0 +1,139 @@
+{% extends "ui/base.html" %}
+{% block title %}Alertas y pendientes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:panel' %}">Inicio</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'ui:reporte_ejecutivo' %}">Tableros</a></li>
+    <li class="breadcrumb-item active">Alertas y pendientes</li>
+  </ol>
+</nav>
+
+{# === Cabecera === #}
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1 class="h5 fw-bold mb-0">Alertas y pendientes</h1>
+      <p class="text-muted small mb-0">Alertas operativas de inventario y órdenes abiertas. Solo lectura.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_ejecutivo' %}">Tablero</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_academico' %}">Académico</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_comercial' %}">Comercial</a>
+    </div>
+  </div>
+</div>
+
+{# === KPIs compactos === #}
+<div class="row g-2 mb-3">
+  {% for k,v in kpi.items %}
+  <div class="col-6 col-lg-4">
+    <div class="card card-soft text-center p-2">
+      <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;">{{ k }}</div>
+      <div class="h5 mb-0 fw-bold {% if v > 0 %}text-danger{% endif %}">{{ v }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# === Navegación de vistas === #}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a class="btn btn-sm {% if vista == 'alertas_stock' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?vista=alertas_stock">Alertas de stock</a>
+  <a class="btn btn-sm {% if vista == 'ordenes_abiertas' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?vista=ordenes_abiertas">Órdenes abiertas</a>
+</div>
+
+{# === Tabla por vista === #}
+<div class="card card-soft mb-3">
+  <div class="card-body">
+
+    {% if vista == "alertas_stock" %}
+    <h2 class="h6 mb-3">Alertas de stock activas</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th class="text-end">Stock actual</th>
+          <th class="text-end">Stock mínimo</th>
+          <th>Generado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.existencia.concepto.nombre }}</td>
+          <td class="text-end text-danger fw-bold">{{ row.stock_actual }}</td>
+          <td class="text-end">{{ row.stock_minimo }}</td>
+          <td>{{ row.generado_en|date:"d/m/Y H:i" }}</td>
+          <td>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:ventas_home' %}">Ventas</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted text-center py-3">Sin alertas de stock activas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% elif vista == "ordenes_abiertas" %}
+    <h2 class="h6 mb-3">Órdenes abiertas (pendiente / parcial)</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Alumno</th>
+          <th>Período</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.inscripcion.alumno }}</td>
+          <td>{{ row.inscripcion.grupo.periodo_ref.codigo }}</td>
+          <td>
+            <span class="badge {% if row.estado == 'parcial' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+              {{ row.estado }}
+            </span>
+          </td>
+          <td>{{ row.fecha_emision|date:"d/m/Y" }}</td>
+          <td>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:ventas_home' %}">Ventas</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted text-center py-3">Sin órdenes abiertas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+  </div>
+</div>
+
+{# === Paginación === #}
+{% if page_obj.has_other_pages %}
+<div class="d-flex gap-2 mb-3">
+  {% if page_obj.has_previous %}
+  <a class="btn btn-outline-secondary btn-sm"
+     href="?vista={{ vista }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+  {% else %}
+  <button class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+  {% endif %}
+  <span class="btn btn-sm disabled">Pág. {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn-outline-secondary btn-sm"
+     href="?vista={{ vista }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+  {% else %}
+  <button class="btn btn-outline-secondary btn-sm" disabled>Siguiente</button>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="mt-2">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_ejecutivo' %}">Volver al tablero</a>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'ui/base.html' %}
+{% block title %}Calificaciones | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Captura de calificaciones</h1>
+<p class="text-muted">Validación sugerida: 0 a 10. Mensajes claros para el usuario.</p>
+
+<div class="card shadow-sm">
+  <div class="card-body table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Matrícula</th>
+          <th>Alumno</th>
+          {% for m in materias %}<th>{{ m }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in alumnos %}
+        <tr>
+          <td>{{ a.matricula }}</td>
+          <td>{{ a.nombre }}</td>
+          {% for m in materias %}
+          <td style="min-width:120px;">
+            <input class="form-control form-control-sm nota" type="number" min="0" max="10" placeholder="0-10">
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="btn btn-primary" onclick="validarNotas()">Guardar</button>
+  </div>
+</div>
+
+<script>
+  function validarNotas() {
+    const notas = document.querySelectorAll(".nota");
+    for (const n of notas) {
+      const v = n.value === "" ? null : Number(n.value);
+      if (v !== null && (v < 0 || v > 10)) {
+        jocaModal("Revisa esto", "Hay una calificación fuera de rango (0 a 10).");
+        n.focus();
+        return;
+      }
+    }
+    jocaToast("Listo: calificaciones guardadas (demo).");
+  }
+</script>
+{% endblock %}

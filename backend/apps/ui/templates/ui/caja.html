@@ -1,0 +1,33 @@
+{% extends 'ui/base.html' %}
+{% block title %}Caja | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Caja y cobros</h1>
+<p class="text-muted">Pantalla demo para registrar cobros dentro de Ventas con lenguaje claro.</p>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <label class="form-label">Concepto</label>
+        <select class="form-select mb-2">
+          {% for c in conceptos %}<option>{{ c }}</option>{% endfor %}
+        </select>
+        <label class="form-label">Monto</label>
+        <input class="form-control mb-3" placeholder="$ 0.00">
+        <button class="btn btn-primary" onclick="jocaToast('Pago registrado (demo).')">Cobrar</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Ayuda rápida</h2>
+        <ul class="small text-muted mb-0">
+          <li>Se muestran mensajes claros: éxito, error, confirmación.</li>
+          <li>La emisión de ticket PDF se integra en la siguiente iteración.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "ui/base.html" %}
+{% block title %}Acceso | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<style>
+  .login-viewport {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+  }
+
+  .login-compact .card-body {
+    padding: .85rem 1rem;
+  }
+
+  .login-compact .mb-3 {
+    margin-bottom: .75rem !important;
+  }
+
+  .recaptcha-compact {
+    position: relative;
+    overflow: hidden;
+    width: 305px;
+    height: 62px;   /* 66-4: recorta 4px adicionales del banner rojo de test keys */
+    margin-bottom: -2px;
+  }
+
+  .recaptcha-compact .g-recaptcha {
+    transform: translateY(-16px); /* era -12px: oculta banner ~14px de 'development only' */
+  }
+
+  @media (max-width: 991px) {
+    .login-viewport {
+      min-height: auto;
+      display: block;
+    }
+
+    .recaptcha-compact {
+      width: 100%;
+      height: 66px;   /* 70-4: mismo ajuste proporcional para móvil */
+      margin-bottom: 0;
+    }
+
+    .recaptcha-compact .g-recaptcha {
+      transform: scale(0.92) translateY(-14px); /* era -10px: +4px para recortar banner */
+      transform-origin: left top;
+    }
+  }
+</style>
+
+<div class="row justify-content-center login-compact login-viewport">
+  <div class="col-12 col-md-6 col-lg-5">
+    <div class="card card-soft">
+      <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h1 class="h4 mb-0">Acceso al sistema</h1>
+          <a href="/portal/" class="btn btn-outline-secondary btn-sm">Volver al portal</a>
+        </div>
+
+        {# Errores de acceso #}
+        {% if form_errors %}
+        <div class="alert alert-danger py-2 small mb-3">{{ form_errors }}</div>
+        {% endif %}
+
+        <form method="post" novalidate id="login-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ next|default:'/panel/' }}">
+          <input type="hidden" name="g-recaptcha-response" id="id-g-recaptcha-response" value="">
+
+          <div class="mb-3">
+            <label class="form-label">Usuario o correo electrónico</label>
+            <input class="form-control" name="username" autocomplete="username" required
+              value="{{ username|default:'' }}">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input class="form-control" name="password" type="password" autocomplete="current-password" required>
+          </div>
+
+          {# Honeypot invisible: debe existir, pero SIEMPRE vacío #}
+          <input type="text" name="hp" value="" autocomplete="off" tabindex="-1"
+            style="position:absolute; left:-9999px; height:1px; width:1px;">
+
+          <div class="mb-3">
+            <label class="form-label">Verificación de seguridad</label>
+
+            <div class="form-text mb-1">
+              {% if verif_pregunta %}
+              {{ verif_pregunta }}
+              {% else %}
+              {% with q=request.session.login_verif_question %}
+              {% if q %}{{ q }}{% else %}Recarga la página para generar la verificación.{% endif %}
+              {% endwith %}
+              {% endif %}
+            </div>
+
+            <input class="form-control" name="verificacion" inputmode="numeric" autocomplete="off"
+              placeholder="Escribe la respuesta" required>
+          </div>
+
+          {% if recaptcha_enabled and show_recaptcha %}
+          <div class="mb-3">
+            <label class="form-label">CAPTCHA Google (adicional)</label>
+            {% if recaptcha_mode == "v3" %}
+            <div class="alert alert-light border small mb-0">
+              Verificacion anti-bot activa (reCAPTCHA v3 invisible).
+            </div>
+            {% else %}
+            <div class="recaptcha-compact">
+              <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+            </div>
+            {% endif %}
+            <div class="form-text">Confirma que eres una persona para continuar.</div>
+          </div>
+          {% endif %}
+
+          <button class="btn btn-joca w-100" type="submit">Ingresar</button>
+
+          <div class="text-center mt-2">
+            <a href="/acceso/recuperar/" class="btn btn-link">¿Olvidaste tu acceso?</a>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if recaptcha_enabled and show_recaptcha %}
+{% if recaptcha_mode == "v3" %}
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
+<script>
+  (function () {
+    const form = document.getElementById('login-form');
+    const tokenInput = document.getElementById('id-g-recaptcha-response');
+    if (!form || !tokenInput || typeof grecaptcha === 'undefined') return;
+
+    form.addEventListener('submit', function (event) {
+      if (form.dataset.recaptchaReady === '1') {
+        return;
+      }
+      event.preventDefault();
+      grecaptcha.ready(function () {
+        grecaptcha.execute('{{ recaptcha_site_key }}', { action: 'login' }).then(function (token) {
+          tokenInput.value = token || '';
+          form.dataset.recaptchaReady = '1';
+          form.submit();
+        });
+      });
+    });
+  })();
+</script>
+{% else %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
+{% endif %}
+{% endblock %}

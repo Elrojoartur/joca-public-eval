@@ -1,0 +1,121 @@
+{% extends 'ui/base.html' %}
+{% block title %}Contacto | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <div class="card card-soft mb-3">
+    <div class="card-body d-flex justify-content-between align-items-center gap-2 flex-wrap">
+      <div>
+        <h1 class="h4 mb-1">Contacto</h1>
+        <p class="text-muted mb-0">Datos institucionales y formulario de contacto.</p>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="/portal/">Volver al portal</a>
+    </div>
+  </div>
+
+  {% if grupo_ref %}
+  <div class="alert alert-info d-flex align-items-center gap-2 mb-3 py-2">
+    <i class="bi bi-info-circle-fill flex-shrink-0"></i>
+    <div class="small">
+      Estás pidiendo información sobre:
+      <strong>{{ grupo_ref.curso }}</strong>{% if grupo_ref.horario %} &middot; {{ grupo_ref.horario }}{% endif %}.
+      Completa el formulario y nos pondremos en contacto contigo.
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="row g-3">
+    <div class="col-12 col-lg-4">
+      <div class="card card-soft h-100">
+        <div class="card-body">
+          <h2 class="h6 mb-2">Datos de contacto</h2>
+          <div class="small text-muted">
+            Tel: {{ contact_info.telefono }}<br>
+            WhatsApp: {{ contact_info.whatsapp }}<br>
+            Correo: {{ contact_info.correo }}<br>
+            Horario: {{ contact_info.horario }}<br>
+            Dirección: {{ contact_info.direccion }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+      <div class="card card-soft">
+        <div class="card-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_nombre">Nombre *</label>
+              <input type="text" name="nombre" id="id_nombre"
+                value="{{ contact_form.nombre.value|default_if_none:'' }}"
+                class="form-control form-control-sm{% if contact_form.nombre.errors %} is-invalid{% endif %}"
+                required>
+              {% for error in contact_form.nombre.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_email">Correo *</label>
+              <input type="email" name="email" id="id_email"
+                value="{{ contact_form.email.value|default_if_none:'' }}"
+                class="form-control form-control-sm{% if contact_form.email.errors %} is-invalid{% endif %}"
+                required>
+              {% for error in contact_form.email.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_telefono">Teléfono</label>
+              <input type="text" name="telefono" id="id_telefono"
+                value="{{ contact_form.telefono.value|default_if_none:'' }}"
+                class="form-control form-control-sm{% if contact_form.telefono.errors %} is-invalid{% endif %}">
+              {% for error in contact_form.telefono.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_asunto">Asunto</label>
+              <input type="text" name="asunto" id="id_asunto"
+                value="{{ contact_form.asunto.value|default_if_none:'' }}"
+                class="form-control form-control-sm{% if contact_form.asunto.errors %} is-invalid{% endif %}">
+              {% for error in contact_form.asunto.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_mensaje">Mensaje *</label>
+              <textarea name="mensaje" id="id_mensaje" rows="3"
+                class="form-control form-control-sm{% if contact_form.mensaje.errors %} is-invalid{% endif %}"
+                required>{{ contact_form.mensaje.value|default_if_none:'' }}</textarea>
+              {% for error in contact_form.mensaje.errors %}
+              <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small" for="id_security_answer">Verificación</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">{{ security_question }}</span>
+                <input type="text" name="security_answer" id="id_security_answer"
+                  value="{{ contact_form.security_answer.value|default_if_none:'' }}"
+                  class="form-control{% if contact_form.security_answer.errors %} is-invalid{% endif %}" required>
+              </div>
+              {% for error in contact_form.security_answer.errors %}
+              <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-joca btn-sm w-100">Enviar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

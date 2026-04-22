@@ -1,0 +1,115 @@
+{% extends "ui/base.html" %}
+{% block title %}Comprobante #{{ ticket.pk }} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="h4 mb-1"><strong>Comprobante de pago</strong></h1>
+  <p class="text-muted mb-0">Folio #{{ ticket.pk }} · {{ ticket.generado_en|date:"d/m/Y H:i" }}</p>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/estado-cuenta/">Volver a Estado de cuenta</a>
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+  </div>
+</div>
+
+<!-- Datos del alumno -->
+<div class="card card-soft mb-3">
+  <div class="card-header"><strong>Datos del alumno</strong></div>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <p class="text-muted small mb-0">Matrícula</p>
+        <p class="fw-semibold mb-0">{{ alumno.matricula }}</p>
+      </div>
+      <div class="col-6 col-md-5">
+        <p class="text-muted small mb-0">Nombre</p>
+        <p class="fw-semibold mb-0">{{ alumno.nombres }} {{ alumno.apellido_paterno }} {{ alumno.apellido_materno }}</p>
+      </div>
+      <div class="col-6 col-md-4">
+        <p class="text-muted small mb-0">Grupo / Período</p>
+        <p class="fw-semibold mb-0">{{ inscripcion.grupo }} / {{ inscripcion.grupo.periodo }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detalle de la orden -->
+<div class="card card-soft mb-3">
+  <div class="card-header"><strong>Detalle de la orden #{{ orden.pk }}</strong></div>
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">Concepto</th>
+          <th>Cantidad</th>
+          <th>Precio unitario</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td class="ps-3">{{ item.concepto.nombre }}</td>
+          <td>{{ item.cantidad }}</td>
+          <td>${{ item.precio_unit }}</td>
+          <td>${{ item.total_calculado }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-2">Sin conceptos.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="table-light">
+          <td colspan="3" class="text-end pe-3 fw-semibold ps-3">Total de la orden</td>
+          <td class="fw-semibold">${{ orden.total_calculado }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- Datos del pago -->
+<div class="card card-soft mb-3">
+  <div class="card-header"><strong>Pago registrado</strong></div>
+  <div class="card-body">
+    <div class="row g-2">
+      <div class="col-6 col-md-3">
+        <p class="text-muted small mb-0">Monto pagado</p>
+        <p class="fw-semibold mb-0 text-success">${{ pago.monto }}</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <p class="text-muted small mb-0">Método</p>
+        <p class="fw-semibold mb-0">{{ pago.metodo|lower|capfirst }}</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <p class="text-muted small mb-0">Fecha de pago</p>
+        <p class="fw-semibold mb-0">{{ pago.fecha_pago|date:"d/m/Y H:i" }}</p>
+      </div>
+      <div class="col-6 col-md-3">
+        <p class="text-muted small mb-0">Estado de la orden</p>
+        <p class="mb-0">
+          {% if orden.estado == "pagada" %}
+            <span class="badge bg-success">Pagada</span>
+          {% elif orden.estado == "parcial" %}
+            <span class="badge bg-warning text-dark">Parcial</span>
+          {% elif orden.estado == "cancelada" %}
+            <span class="badge bg-danger">Cancelada</span>
+          {% else %}
+            <span class="badge bg-secondary">Pendiente</span>
+          {% endif %}
+        </p>
+      </div>
+      {% if pago.auth_code %}
+      <div class="col-12 col-md-6">
+        <p class="text-muted small mb-0">Referencia de pago</p>
+        <p class="fw-semibold mb-0">{{ pago.auth_code }}</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

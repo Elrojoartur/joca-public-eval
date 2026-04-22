@@ -1,0 +1,20 @@
+:root{
+  --color-primary:#0F766E;
+  --color-primary-600:#115E59;
+  --color-secondary:#2563EB;
+  --success:#16A34A;
+  --warning:#F59E0B;
+  --error:#DC2626;
+  --gray-900:#0F172A;
+  --gray-700:#334155;
+  --gray-300:#CBD5E1;
+  --gray-50:#F8FAFC;
+  --surface:#FFFFFF;
+
+  --space-4:4px; --space-8:8px; --space-12:12px; --space-16:16px;
+  --space-24:24px; --space-32:32px;
+
+  --radius-base:8px;
+  --radius-btn:6px;
+  --border-1:1px solid var(--gray-300);
+}

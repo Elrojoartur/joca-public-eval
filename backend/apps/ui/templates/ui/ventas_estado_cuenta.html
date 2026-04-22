@@ -1,0 +1,29 @@
+{% extends "ui/base.html" %}
+{% block title %}Estado de cuenta | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div>
+      <h1 class="h4 mb-1">Estado de cuenta</h1>
+      <p class="muted mb-0">Pagos del alumno y adeudos.</p>
+    </div>
+    <div class="text-md-end">
+      <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a ventas</a>
+    </div>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body">
+    <div class="muted mb-2">Endpoint sugerido:</div>
+    <code>{{ api_pagos_url }}</code>
+
+    <hr>
+
+    <p class="muted mb-0">
+      Aquí vamos a listar pagos (PAGO) y calcular saldo por alumno/período.
+    </p>
+  </div>
+</div>
+{% endblock %}

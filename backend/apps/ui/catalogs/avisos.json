@@ -1,0 +1,38 @@
+[
+    {
+        "id": "aviso-06",
+        "titulo": "Inicio de ciclo febrero",
+        "cuerpo": "Las clases del nuevo ciclo comienzan la primera semana de febrero. Verifica tu grupo y horario.",
+        "fecha": "2026-02-01"
+    },
+    {
+        "id": "aviso-05",
+        "titulo": "Inscripciones abiertas",
+        "cuerpo": "Aprovecha la ventana de inscripción y aparta tu lugar en el curso de tu elección.",
+        "fecha": "2026-01-28"
+    },
+    {
+        "id": "aviso-04",
+        "titulo": "Becas parciales disponibles",
+        "cuerpo": "Consulta los requisitos para solicitar beca parcial en modalidad presencial.",
+        "fecha": "2026-01-25"
+    },
+    {
+        "id": "aviso-03",
+        "titulo": "Sesión informativa en línea",
+        "cuerpo": "Todos los martes a las 18:00 tenemos sesión informativa por videollamada.",
+        "fecha": "2026-01-23"
+    },
+    {
+        "id": "aviso-02",
+        "titulo": "Cupo limitado en Robótica",
+        "cuerpo": "El taller de robótica está cerca de llenarse. Revisa disponibilidad y aparta tu lugar.",
+        "fecha": "2026-01-20"
+    },
+    {
+        "id": "aviso-01",
+        "titulo": "Entrega de constancias",
+        "cuerpo": "Las constancias del ciclo anterior estarán disponibles a partir del 30 de enero.",
+        "fecha": "2026-01-18"
+    }
+]

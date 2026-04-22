@@ -1,0 +1,43 @@
+{% extends "ui/base.html" %}
+{% block title %}Ventas | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div>
+      <h1 class="h4 mb-1">Ventas (POS)</h1>
+      <p class="muted mb-0">Operación comercial: catálogo, cobros y comprobantes.</p>
+    </div>
+    <div class="text-md-end">
+      <a class="btn btn-outline-secondary btn-sm" href="/panel/">Volver al panel</a>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <div class="muted">Ventas del día:</div>
+    <div class="h5 mb-0">
+      {% if ventas_del_dia is not None %}
+        $ {{ ventas_del_dia }}
+      {% else %}
+        <span class="text-muted">Pendiente de conectar (API/ORM)</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for c in cards %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft h-100">
+      <div class="card-body d-flex flex-column">
+        <h2 class="h6 mb-2">{{ c.title }}</h2>
+        <p class="muted mb-3">{{ c.desc }}</p>
+        <div class="mt-auto">
+          <a class="btn btn-joca btn-sm text-white" href="{{ c.href }}">Abrir</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

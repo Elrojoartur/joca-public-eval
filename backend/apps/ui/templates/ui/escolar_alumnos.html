@@ -1,0 +1,621 @@
+{% extends 'ui/base.html' %}
+{% block title %}Alumnos | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header mb-1">
+    <h1 class="h4 mb-1"><strong>Alumnos</strong></h1>
+    <p class="muted mb-0">Gestiona los alumnos. Usa el formulario para crear o editar registros.</p>
+</div>
+
+{% if messages %}
+    {% for m in messages %}
+        <div class="alert alert-{{ m.tags }} py-1 px-2 mb-1">{{ m }}</div>
+    {% endfor %}
+{% endif %}
+
+{# ── Siguiente paso: inscribir al alumno recién creado ── #}
+{% if nuevo_alumno %}
+<div class="alert alert-info d-flex flex-column flex-sm-row align-items-sm-center justify-content-sm-between gap-2 py-2 px-3 mb-2" role="alert">
+  <div>
+    <strong>&#10003; Alumno {{ nuevo_alumno.matricula }} creado.</strong>
+    ¿Deseas inscribirlo en un grupo ahora?
+  </div>
+  <div class="d-flex gap-2 flex-shrink-0">
+    <a class="btn btn-sm btn-primary"
+       href="/panel/escolar/inscripciones/">
+      Ir a inscripciones
+    </a>
+    <a class="btn btn-sm btn-outline-secondary"
+       href="/panel/escolar/alumnos/{{ nuevo_alumno.pk }}/expediente/">
+      Ver expediente
+    </a>
+    {% if nuevo_alumno.correo %}
+    <form method="post"
+          action="/panel/escolar/alumnos/{{ nuevo_alumno.pk }}/generar-acceso/"
+          class="d-inline mb-0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-success">Generar acceso</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card card-soft mb-2">
+    <div class="card-body py-1 px-2">
+        <div class="d-flex flex-wrap gap-1">
+            <a class="btn btn-outline-primary btn-sm {% if modo == 'form' %}active{% endif %}"
+               href="/panel/escolar/alumnos/?modo=form">
+                Formulario
+            </a>
+            <a class="btn btn-outline-primary btn-sm {% if modo == 'lista' %}active{% endif %}"
+               href="/panel/escolar/alumnos/?modo=lista">
+                Ver listado
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if modo == 'form' %}
+<div class="card card-soft">
+    <div class="card-body p-2">
+        <h2 class="h5 mb-2"><strong>{% if edit_id %}Editar{% else %}Agregar{% endif %} alumno</strong></h2>
+
+        <form id="alumnos-form"
+              method="post"
+              action="/panel/escolar/alumnos/?modo=form{% if edit_id %}&edit={{ edit_id }}{% endif %}"
+              novalidate
+              data-skip-global-validation="1">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-warning py-1 px-2 mb-1">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="row g-1">
+                <div class="col-12 col-md-6">
+                    <label class="form-label small fw-semibold mb-1">Matrícula</label>
+                    {% if edit_id %}
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               value="{{ form.instance.matricula }}"
+                               readonly
+                               aria-label="Matrícula (solo lectura)">
+                    {% else %}
+                        <input type="text"
+                               class="form-control form-control-sm text-muted fst-italic"
+                               value=" "
+                               readonly
+                               aria-label="Matrícula se genera automáticamente">
+                    {% endif %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.nombres.id_for_label }}" class="form-label small fw-semibold mb-1">Nombres</label>
+                    {{ form.nombres }}
+                    {% for error in form.nombres.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.apellido_paterno.id_for_label }}" class="form-label small fw-semibold mb-1">Apellido paterno</label>
+                    {{ form.apellido_paterno }}
+                    {% for error in form.apellido_paterno.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.apellido_materno.id_for_label }}" class="form-label small fw-semibold mb-1">Apellido materno</label>
+                    {{ form.apellido_materno }}
+                    {% for error in form.apellido_materno.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.correo.id_for_label }}" class="form-label small fw-semibold mb-1">Correo</label>
+                    {{ form.correo }}
+                    {% for error in form.correo.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.telefono.id_for_label }}" class="form-label small fw-semibold mb-1">Teléfono</label>
+                    {{ form.telefono }}
+                    {% for error in form.telefono.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.curp.id_for_label }}" class="form-label small fw-semibold mb-1">CURP</label>
+                    {{ form.curp }}
+                    <div class="form-text small mt-1 mb-0">Opcional. Si se captura, debe ser una CURP oficial válida.</div>
+                    {% for error in form.curp.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ form.rfc.id_for_label }}" class="form-label small fw-semibold mb-1">RFC</label>
+                    {{ form.rfc }}
+                    {% for error in form.rfc.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12">
+                    <div id="rfc-curp-helper-wrap" class="mb-1"></div>
+                </div>
+
+                {% if domicilio_form %}
+                <div class="col-12 mt-2">
+                    <p class="small fw-semibold text-muted mb-1 border-bottom pb-1">Domicilio complementario (opcional)</p>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ domicilio_form.calle.id_for_label }}" class="form-label small fw-semibold mb-1">Calle</label>
+                    {{ domicilio_form.calle }}
+                    {% for error in domicilio_form.calle.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label for="{{ domicilio_form.numero.id_for_label }}" class="form-label small fw-semibold mb-1">Número</label>
+                    {{ domicilio_form.numero }}
+                    {% for error in domicilio_form.numero.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-3">
+                    <label for="{{ domicilio_form.codigo_postal.id_for_label }}" class="form-label small fw-semibold mb-1">Código postal</label>
+                    {{ domicilio_form.codigo_postal }}
+                    {% for error in domicilio_form.codigo_postal.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ domicilio_form.colonia.id_for_label }}" class="form-label small fw-semibold mb-1">Colonia</label>
+                    {{ domicilio_form.colonia }}
+                    {% for error in domicilio_form.colonia.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ domicilio_form.estado.id_for_label }}" class="form-label small fw-semibold mb-1">Estado</label>
+                    {{ domicilio_form.estado }}
+                    {% for error in domicilio_form.estado.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="{{ domicilio_form.pais.id_for_label }}" class="form-label small fw-semibold mb-1">País</label>
+                    {{ domicilio_form.pais }}
+                    {% for error in domicilio_form.pais.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if grupos_activos is not None %}
+                <div class="col-12 mt-2">
+                    <p class="small fw-semibold text-muted mb-1 border-bottom pb-1">Inscripción inicial (opcional)</p>
+                </div>
+
+                {# ── Selector de grupo ── #}
+                <div class="col-12 col-md-6">
+                    <label for="id-inscripcion-grupo" class="form-label small fw-semibold mb-1">Grupo</label>
+                    <select name="grupo"
+                            id="id-inscripcion-grupo"
+                            class="form-select form-select-sm"
+                            aria-describedby="grupo-curso-info grupo-horario-info">
+                        <option value="">— Sin inscripción inicial —</option>
+                        {% for g in grupos_activos %}
+                        <option value="{{ g.pk }}"
+                                {% if g.pk == inscripcion_grupo_id %}selected{% endif %}
+                                data-curso-codigo="{{ g.curso_ref.codigo }}"
+                                data-curso-nombre="{{ g.curso_ref.nombre }}"
+                                data-periodo="{{ g.periodo_ref.codigo }}"
+                                data-tipo="{{ g.get_tipo_horario_display }}"
+                                data-horarios="{% for h in g.horarios_lista %}{{ h.get_dia_display }} {{ h.hora_inicio|time:'H:i' }}-{{ h.hora_fin|time:'H:i' }}{% if not forloop.last %} | {% endif %}{% endfor %}">
+                            Grupo {{ g.pk }} — {{ g.curso_ref.codigo }} ({{ g.periodo_ref.codigo }}, {{ g.get_tipo_horario_display }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% for error in inscripcion_form.grupo.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                {# ── Bloque informativo: curso ── #}
+                <div class="col-12 col-md-3">
+                    <p class="form-label small fw-semibold mb-1">Curso del grupo</p>
+                    <div id="grupo-curso-info"
+                         class="border rounded px-2 py-1 bg-light small lh-base"
+                         style="min-height:2.6rem;">
+                        <span class="text-muted fst-italic">Selecciona un grupo</span>
+                    </div>
+                </div>
+
+                {# ── Bloque informativo: horario(s) ── #}
+                <div class="col-12 col-md-3">
+                    <p class="form-label small fw-semibold mb-1">Horario(s) del grupo</p>
+                    <div id="grupo-horario-info"
+                         class="border rounded px-2 py-1 bg-light small lh-base"
+                         style="min-height:2.6rem;">
+                        <span class="text-muted fst-italic">—</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="col-12 d-flex flex-wrap gap-1 mt-1">
+                    <button
+                        id="btn-guardar-alumno"
+                        class="btn btn-joca btn-sm"
+                        type="button"
+                        onclick="document.getElementById('alumnos-form').submit();">
+                        Guardar
+                    </button>
+
+                    <a class="btn btn-outline-primary btn-sm" href="/panel/escolar/alumnos/?modo=lista">
+                        Ver listado
+                    </a>
+
+                    <a class="btn btn-outline-secondary btn-sm" href="/panel/escolar/alumnos/?modo=form">
+                        Cancelar
+                    </a>
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if modo == 'lista' %}
+<div class="card card-soft">
+    <div class="card-body p-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-2">
+            <h2 class="h5 mb-0"><strong>Lista y filtros de alumnos</strong></h2>
+        </div>
+
+        <form method="get" class="row g-1 align-items-end mb-2">
+            <input type="hidden" name="modo" value="lista">
+
+            <div class="col-12 col-xl-5">
+                <label class="form-label small fw-semibold mb-1">Buscar</label>
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ filtro_texto }}"
+                    class="form-control form-control-sm"
+                    placeholder="Nombre, correo o matrícula">
+            </div>
+
+            <div class="col-6 col-xl-2">
+                <label class="form-label small fw-semibold mb-1">Desde</label>
+                <input
+                    type="date"
+                    name="desde"
+                    value="{{ creado_desde|date:'Y-m-d' }}"
+                    class="form-control form-control-sm">
+            </div>
+
+            <div class="col-6 col-xl-2">
+                <label class="form-label small fw-semibold mb-1">Hasta</label>
+                <input
+                    type="date"
+                    name="hasta"
+                    value="{{ creado_hasta|date:'Y-m-d' }}"
+                    class="form-control form-control-sm">
+            </div>
+
+            <div class="col-12 col-xl-3 d-flex gap-1 flex-wrap justify-content-xl-end">
+                <button class="btn btn-outline-primary btn-sm px-2" type="submit">Filtrar</button>
+                <a class="btn btn-outline-secondary btn-sm px-2" href="/panel/escolar/alumnos/?modo=lista">Limpiar</a>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-1" style="table-layout: fixed; width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="width: 11%;">Matrícula</th>
+                        <th style="width: 23%;">Nombre completo</th>
+                        <th style="width: 17%;">Curso</th>
+                        <th style="width: 16%;">Horario</th>
+                        <th style="width: 9%;">Estado insc.</th>
+                        <th class="text-end" style="width: 24%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in alumnos %}
+                    {% with insc=a.inscripciones_activas|first %}
+                    <tr>
+                        <td style="white-space: nowrap;" class="font-monospace">{{ a.matricula }}</td>
+                        <td style="word-break: break-word;">
+                            {{ a.nombres }} {{ a.apellido_paterno }}
+                            {% if a.apellido_materno %} {{ a.apellido_materno }}{% endif %}
+                        </td>
+
+                        {% if insc %}
+                        <td>
+                            <span class="badge bg-secondary text-wrap text-start" style="font-size:.7rem;">
+                                {{ insc.grupo.curso_ref.codigo }}
+                            </span><br>
+                            <small class="text-muted">{{ insc.grupo.curso_ref.nombre }}</small>
+                        </td>
+                        <td>
+                            <small class="lh-sm">
+                                {% for h in insc.grupo.horarios_activos %}
+                                    <span class="d-block">
+                                        {{ h.get_dia_display }}
+                                        {{ h.hora_inicio|time:"H:i" }}-{{ h.hora_fin|time:"H:i" }}
+                                    </span>
+                                {% empty %}
+                                    <span class="badge bg-secondary-subtle text-secondary border" style="font-size:.65rem;">Horario por definir</span>
+                                {% endfor %}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge
+                                {% if insc.estado == 'activa' %}bg-success
+                                {% elif insc.estado == 'baja' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ insc.get_estado_display }}
+                            </span>
+                        </td>
+                        {% else %}
+                        <td colspan="3">
+                            <span class="badge bg-warning-subtle text-warning border" style="font-size:.72rem;">Sin inscripción activa</span>
+                        </td>
+                        {% endif %}
+
+                        <td class="text-end">
+                            <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                <a class="btn btn-sm btn-outline-info py-0 px-2"
+                                   href="/panel/escolar/alumnos/{{ a.pk }}/expediente/">
+                                    Ver expediente
+                                </a>
+
+                                <a class="btn btn-sm btn-outline-primary py-0 px-2"
+                                   href="/panel/escolar/alumnos/?modo=form&edit={{ a.pk }}">
+                                    Editar
+                                </a>
+
+                                <a class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                   href="/panel/escolar/inscripciones/">
+                                    Inscribir
+                                </a>
+
+                                {% if insc %}
+                                <a class="btn btn-sm btn-outline-success py-0 px-2"
+                                   href="/panel/escolar/alumnos/{{ a.pk }}/boleta/">
+                                    Ver boleta
+                                </a>
+                                {% endif %}
+
+                                <form method="post"
+                                      action="/panel/escolar/alumnos/?modo=lista"
+                                      class="d-inline mb-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete_id" value="{{ a.pk }}">
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-2"
+                                            type="submit"
+                                            onclick="return confirm('¿Eliminar alumno?');">
+                                        Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Sin alumnos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if alumnos.has_other_pages %}
+        <nav aria-label="Paginación de alumnos">
+            <ul class="pagination pagination-sm justify-content-end mb-0">
+                {% if alumnos.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?modo=lista&page={{ alumnos.previous_page_number }}{% if filtro_texto %}&q={{ filtro_texto|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in alumnos.paginator.page_range %}
+                    {% if num == alumnos.number %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num >= alumnos.number|add:'-1' and num <= alumnos.number|add:'1' %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?modo=lista&page={{ num }}{% if filtro_texto %}&q={{ filtro_texto|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if alumnos.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?modo=lista&page={{ alumnos.next_page_number }}{% if filtro_texto %}&q={{ filtro_texto|urlencode }}{% endif %}{% if creado_desde %}&desde={{ creado_desde|date:'Y-m-d' }}{% endif %}{% if creado_hasta %}&hasta={{ creado_hasta|date:'Y-m-d' }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    function setMsg(input, ok, msg) {
+        if (!input) return;
+        input.classList.toggle('is-invalid', !ok);
+        input.classList.toggle('is-valid', ok);
+
+        let fb = input.parentElement.querySelector('.invalid-feedback');
+        if (!fb) {
+            fb = document.createElement('div');
+            fb.className = 'invalid-feedback d-block';
+            input.parentElement.appendChild(fb);
+        }
+        fb.textContent = ok ? '' : msg;
+    }
+
+    function curpFormatOk(curp) {
+        curp = (curp || '').trim().toUpperCase();
+        if (!curp) return true;
+        const re = /^[A-Z][AEIOUX][A-Z]{2}\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])[HM](AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z]\d$/;
+        return re.test(curp);
+    }
+
+    function rfcMxFormatOk(rfc) {
+        rfc = (rfc || '').trim().toUpperCase();
+        if (!rfc) return true;
+        const re = /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/;
+        return re.test(rfc);
+    }
+
+    function sanitizeWord(value) {
+        return (value || '')
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^A-ZÑ\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function firstVowel(text) {
+        const src = (text || '').toUpperCase();
+        for (let i = 1; i < src.length; i += 1) {
+            if ('AEIOU'.includes(src[i])) return src[i];
+        }
+        return 'X';
+    }
+
+    function buildRfcSuggestion(ap, am, nombres) {
+        const p = sanitizeWord(ap) || 'X';
+        const m = sanitizeWord(am) || 'X';
+        const n = sanitizeWord((nombres || '').split(' ')[0]) || 'X';
+        const prefix = ((p[0] || 'X') + firstVowel(p) + (m[0] || 'X') + (n[0] || 'X')).slice(0, 4);
+        return prefix + '010101' + 'AAA';
+    }
+
+    const curp = document.getElementById('id_curp');
+    const rfc = document.getElementById('id_rfc');
+    const nombres = document.getElementById('id_nombres');
+    const ap = document.getElementById('id_apellido_paterno');
+    const am = document.getElementById('id_apellido_materno');
+    const helperWrap = document.getElementById('rfc-curp-helper-wrap');
+
+    if (curp) {
+        curp.addEventListener('input', function () {
+            const ok = curpFormatOk(curp.value);
+            setMsg(curp, ok, 'Capture una CURP oficial válida de 18 caracteres.');
+        });
+    }
+
+    if (rfc) {
+        rfc.addEventListener('input', function () {
+            const ok = rfcMxFormatOk(rfc.value);
+            setMsg(rfc, ok, 'Capture un RFC válido de 12 o 13 caracteres.');
+        });
+    }
+
+    if (helperWrap && rfc && nombres && ap) {
+        const helper = document.createElement('button');
+        helper.type = 'button';
+        helper.className = 'btn btn-outline-secondary btn-sm';
+        helper.textContent = 'Generar sugerencia RFC';
+        helper.addEventListener('click', function () {
+            if (!rfc.value.trim()) {
+                rfc.value = buildRfcSuggestion(ap.value, am ? am.value : '', nombres.value);
+            }
+        });
+        helperWrap.appendChild(helper);
+    }
+})();
+</script>
+<script>
+(function () {
+    var selGrupo   = document.getElementById('id-inscripcion-grupo');
+    var cursoBox   = document.getElementById('grupo-curso-info');
+    var horarioBox = document.getElementById('grupo-horario-info');
+    if (!selGrupo) return;
+
+    var VACIO_CURSO   = '<span class="text-muted fst-italic">Selecciona un grupo</span>';
+    var VACIO_HORARIO = '<span class="text-muted fst-italic">—</span>';
+
+    function esc(str) {
+        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function updateGrupoInfo() {
+        var opt = selGrupo.options[selGrupo.selectedIndex];
+
+        if (!opt || !opt.value) {
+            if (cursoBox)   cursoBox.innerHTML   = VACIO_CURSO;
+            if (horarioBox) horarioBox.innerHTML = VACIO_HORARIO;
+            return;
+        }
+
+        /* ── Bloque curso ── */
+        if (cursoBox) {
+            var codigo = esc(opt.dataset.cursoCodigo || '');
+            var nombre = esc(opt.dataset.cursoNombre || '');
+            var periodo = esc(opt.dataset.periodo || '');
+            var tipo   = esc(opt.dataset.tipo || '');
+            cursoBox.innerHTML =
+                '<span class="fw-semibold">' + codigo + '</span> ' + nombre +
+                '<br><span class="text-muted">' + periodo + ' &bull; ' + tipo + '</span>';
+        }
+
+        /* ── Bloque horario(s) ── */
+        if (horarioBox) {
+            var raw = (opt.dataset.horarios || '').trim();
+            if (!raw) {
+                horarioBox.innerHTML = '<span class="text-muted fst-italic">Sin horario registrado</span>';
+            } else {
+                var partes = raw.split('|');
+                var html = partes.map(function (p) {
+                    return '<span class="d-block">' + esc(p.trim()) + '</span>';
+                }).join('');
+                horarioBox.innerHTML = html;
+            }
+        }
+    }
+
+    selGrupo.addEventListener('change', updateGrupoInfo);
+    updateGrupoInfo();
+})();
+</script>
+{% endblock %}

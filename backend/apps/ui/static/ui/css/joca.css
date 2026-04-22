@@ -1,0 +1,274 @@
+/* JOCA design tokens and layout */
+:root {
+  /* CCENT / Institucional */
+  --brand: #1F84C8;
+  /* Azul institucional */
+  --brand-rgb: 31, 132, 200;
+  /* RGB de #1F84C8 */
+  --brand-dark: #14639A;
+
+  /* JOCA tokens (mapeados al azul) */
+  --joca-primary: var(--brand);
+  --joca-primary-600: var(--brand-dark);
+
+  /* Neutrales */
+  --joca-gray-50: #f8fafc;
+  --joca-gray-100: #e2e8f0;
+  --joca-gray-500: #64748b;
+  --joca-gray-700: #334155;
+  --joca-gray-900: #0f172a;
+
+  --joca-surface: #ffffff;
+  --joca-radius: 14px;
+  --joca-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+
+  /* Bootstrap: que todo "primary" sea azul */
+  --bs-primary: var(--brand);
+  --bs-primary-rgb: var(--brand-rgb);
+  --bs-link-color: var(--brand);
+  --bs-link-hover-color: var(--brand-dark);
+}
+
+/* Reset base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--joca-gray-50);
+  color: var(--joca-gray-900);
+  font-family: "Poppins", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+}
+
+/* Links: institucional (azul) */
+a {
+  color: var(--bs-link-color);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--bs-link-hover-color);
+  text-decoration: underline;
+}
+
+/* Navbar/topbar */
+.navbar-joca {
+  background: linear-gradient(120deg, var(--joca-primary), var(--joca-primary-600));
+  color: #fff;
+  box-shadow: var(--joca-shadow);
+}
+
+.navbar-joca .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.brand-mark {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.main-shell {
+  padding: 0.55rem 0 0.75rem;
+}
+
+/* Cards */
+.card-soft {
+  border: 1px solid var(--joca-gray-100);
+  border-radius: var(--joca-radius);
+  background: var(--joca-surface);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+/* Botones (forzamos coherencia con azul) */
+.btn-joca,
+.btn-primary {
+  background-color: var(--joca-primary);
+  border-color: var(--joca-primary);
+  color: #fff;
+}
+
+.btn-joca:hover,
+.btn-primary:hover {
+  background-color: var(--joca-primary-600);
+  border-color: var(--joca-primary-600);
+  color: #fff;
+}
+
+.btn-outline-joca,
+.btn-outline-primary {
+  color: var(--joca-primary);
+  border-color: var(--joca-primary);
+}
+
+.btn-outline-joca:hover,
+.btn-outline-primary:hover {
+  background-color: var(--joca-primary);
+  border-color: var(--joca-primary);
+  color: #fff;
+}
+
+/* Textos utilitarios */
+.page-header {
+  margin-bottom: 0.55rem;
+}
+
+.page-header .muted,
+.muted {
+  color: var(--joca-gray-700);
+}
+
+.form-text {
+  color: var(--joca-gray-500);
+}
+
+/* Tables */
+.table thead th {
+  color: var(--joca-gray-700);
+  font-weight: 600;
+}
+
+.table> :not(caption)>*>* {
+  background-color: transparent;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+/* Densidad compacta para paneles: reduce scroll vertical */
+.card-soft .card-body {
+  padding: 0.7rem 0.8rem;
+}
+
+.btn,
+.form-control,
+.form-select,
+.input-group-text {
+  font-size: 0.94rem;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+.form-label {
+  margin-bottom: 0.2rem;
+}
+
+.folder-shortcuts {
+  gap: 6px;
+}
+
+.folder-accordion .accordion-body {
+  padding: 0.7rem 0.8rem;
+}
+
+.folder-accordion .table {
+  font-size: 0.93rem;
+}
+
+.folder-accordion .table> :not(caption)>*>* {
+  padding-top: 0.34rem;
+  padding-bottom: 0.34rem;
+}
+
+.folder-accordion form.vstack {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.55rem 0.7rem;
+}
+
+.folder-accordion form.vstack>p {
+  margin: 0;
+}
+
+.folder-accordion form.vstack>p label {
+  display: inline-block;
+  margin-bottom: 0.2rem;
+}
+
+.folder-accordion form.vstack>.alert,
+.folder-accordion form.vstack>.d-flex,
+.folder-accordion form.vstack>.row,
+.folder-accordion form.vstack>.table-responsive {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1200px) {
+  .folder-accordion form.vstack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .folder-accordion form.vstack>p:last-of-type:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+.row.g-4 {
+  --bs-gutter-y: 1rem;
+}
+
+.row.g-3 {
+  --bs-gutter-y: 0.85rem;
+}
+
+/* Toasts / Modals */
+.toast-container {
+  z-index: 1080;
+}
+
+.toast {
+  box-shadow: var(--joca-shadow);
+  border-radius: 8px;
+}
+
+#joca-modal .modal-content {
+  border: none;
+  border-radius: var(--joca-radius);
+  box-shadow: var(--joca-shadow);
+}
+
+/* Hero */
+.hero-card {
+  background: linear-gradient(135deg,
+      rgba(var(--brand-rgb), 0.12),
+      rgba(var(--brand-rgb), 0.06));
+  border: 1px solid var(--joca-gray-100);
+  border-radius: var(--joca-radius);
+}
+
+/* Quick links */
+.quick-links a {
+  text-align: left;
+}
+
+/* Vistas por carpetas desplegables */
+.folder-accordion .accordion-item {
+  border: 1px solid var(--joca-gray-100);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.folder-accordion .accordion-button {
+  font-weight: 600;
+  background: #fff;
+}
+
+.folder-accordion .accordion-button:not(.collapsed) {
+  color: var(--joca-primary-600);
+  background: rgba(var(--brand-rgb), 0.08);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+.folder-accordion .accordion-body {
+  background: #fff;
+}
+
+.folder-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

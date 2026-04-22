@@ -1,0 +1,18 @@
+{% if page_obj.has_other_pages %}
+<nav class="d-flex justify-content-between align-items-center mt-2" aria-label="Paginación">
+  <small class="text-muted">
+    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    &nbsp;·&nbsp; {{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize:"s" }}
+  </small>
+  <div class="d-flex gap-1">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-outline-secondary btn-sm"
+       href="?modo=catalogos&cat={{ cat }}&cat_page={{ page_obj.previous_page_number }}">Anterior</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a class="btn btn-outline-secondary btn-sm"
+       href="?modo=catalogos&cat={{ cat }}&cat_page={{ page_obj.next_page_number }}">Siguiente</a>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}

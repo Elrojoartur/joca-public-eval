@@ -1,0 +1,38 @@
+[
+    {
+        "id": "electronica-basica",
+        "nombre": "Electrónica básica",
+        "descripcion": "Fundamentos de electricidad, medición con multímetro y buenas prácticas de laboratorio.",
+        "imagen": "ui/cursos/electronica-basica.png"
+    },
+    {
+        "id": "diagnostico-inyeccion-electronica",
+        "nombre": "Diagnóstico en inyección electrónica",
+        "descripcion": "Pruebas de sensores/actuadores y diagnóstico de fallas en sistemas de inyección modernos.",
+        "imagen": "ui/cursos/diagnostico-inyeccion-electronica.png"
+    },
+    {
+        "id": "robotica",
+        "nombre": "Robótica",
+        "descripcion": "Programación y armado de robots educativos con enfoque en control y sensores.",
+        "imagen": "ui/cursos/robotica.png"
+    },
+    {
+        "id": "reparacion-ecus",
+        "nombre": "Reparación de ECUs",
+        "descripcion": "Diagnóstico, reemplazo de componentes y reprogramación básica de unidades de control.",
+        "imagen": "ui/cursos/reparacion-ecus.png"
+    },
+    {
+        "id": "programacion-automotriz",
+        "nombre": "Programación automotriz",
+        "descripcion": "Lectura de datos, flasheo de software y ajustes de calibración en vehículos.",
+        "imagen": "ui/cursos/programacion-automotriz.png"
+    },
+    {
+        "id": "reparacion-audio-video",
+        "nombre": "Reparación de audio y video",
+        "descripcion": "Servicio a equipos multimedia, diagnóstico de etapas de potencia y ajustes de calidad.",
+        "imagen": "ui/cursos/reparacion-audio-video.png"
+    }
+]

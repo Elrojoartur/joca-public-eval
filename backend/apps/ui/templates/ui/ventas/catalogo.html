@@ -1,0 +1,166 @@
+{% extends "ui/base.html" %}
+{% block title %}Catálogo | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="h4 mb-1"><strong>Catálogo de Ventas</strong></h1>
+  <p class="text-muted mb-0">Servicios y materiales disponibles.</p>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+  </div>
+</div>
+
+<!-- MODO FORMULARIO -->
+<div class="card card-soft mb-3">
+  <div class="card-header">
+    <strong>{% if editing_concepto %}Editar concepto{% else %}Agregar concepto{% endif %}</strong>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="concepto_id" value="{% if editing_concepto %}{{ editing_concepto.pk }}{% endif %}">
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold">Nombre del concepto</label>
+          <input type="text" name="nombre" class="form-control form-control-sm" required maxlength="80"
+            value="{% if editing_concepto %}{{ editing_concepto.nombre }}{% endif %}"
+            placeholder="Ej. Inscripción al curso">
+        </div>
+        <div class="col-6 col-md-3">
+          <label class="form-label fw-semibold">Precio ($)</label>
+          <input type="number" name="precio" class="form-control form-control-sm" required min="0" step="0.01"
+            value="{% if editing_concepto %}{{ editing_concepto.precio }}{% endif %}" placeholder="0.00">
+        </div>
+        <div class="col-6 col-md-3 d-flex align-items-end pb-1">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="id_activo" name="activo"
+              {% if editing_concepto %}{% if editing_concepto.activo %}checked{% endif %}{% else %}checked{% endif %}>
+            <label class="form-check-label fw-semibold" for="id_activo">Activo</label>
+          </div>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-4 d-flex align-items-end pb-1">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="id_inventario" name="inventario_habilitado"
+              {% if editing_concepto %}
+                {% if editing_concepto.existencia and editing_concepto.existencia.inventario_habilitado %}checked{% endif %}
+              {% endif %}>
+            <label class="form-check-label fw-semibold" for="id_inventario">Descuenta inventario (material)</label>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label fw-semibold">Stock actual</label>
+          <input type="number" name="stock_actual" class="form-control form-control-sm" min="0" step="0.01"
+            value="{% if editing_concepto and editing_concepto.existencia %}{{ editing_concepto.existencia.stock_actual }}{% else %}0{% endif %}"
+            placeholder="0">
+        </div>
+        <div class="col-6 col-md-4">
+          <label class="form-label fw-semibold">Stock mínimo</label>
+          <input type="number" name="stock_minimo" class="form-control form-control-sm" min="0" step="0.01"
+            value="{% if editing_concepto and editing_concepto.existencia %}{{ editing_concepto.existencia.stock_minimo }}{% else %}0{% endif %}"
+            placeholder="0">
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-joca btn-sm" type="submit">
+          {% if editing_concepto %}Actualizar{% else %}Agregar{% endif %}
+        </button>
+        {% if editing_concepto %}
+        <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/catalogo/">Cancelar</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODO LISTADO -->
+<div class="card card-soft">
+  <div class="card-header">
+    <strong>Listado de conceptos</strong>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">Nombre</th>
+          <th>Precio</th>
+          <th>Tipo</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in page_obj %}
+        <tr>
+          <td class="ps-3"><strong>{{ c.nombre }}</strong></td>
+          <td>${{ c.precio }}</td>
+          <td>
+            {% if c.existencia and c.existencia.inventario_habilitado %}
+              <span class="badge bg-warning text-dark">Material</span>
+            {% else %}
+              <span class="badge bg-info text-dark">Servicio</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if c.existencia and c.existencia.inventario_habilitado %}
+              {{ c.existencia.stock_actual }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            {% if c.activo %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="text-end pe-2">
+            <a class="btn btn-xs btn-outline-primary btn-sm" href="/panel/ventas/catalogo/?edit={{ c.id }}">Editar</a>
+            <form method="post" action="/panel/ventas/catalogo/" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="toggle_id" value="{{ c.id }}">
+              <button class="btn btn-xs btn-outline-secondary btn-sm" type="submit">
+                {% if c.activo %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+            <form method="post" action="/panel/ventas/catalogo/" class="d-inline"
+              onsubmit="return confirm('¿Eliminar el concepto {{ c.nombre }}?');">
+              {% csrf_token %}
+              <input type="hidden" name="delete_id" value="{{ c.id }}">
+              <button class="btn btn-xs btn-outline-danger btn-sm" type="submit">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">No hay conceptos todavía.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <span class="small text-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+      {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+      {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Siguiente</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

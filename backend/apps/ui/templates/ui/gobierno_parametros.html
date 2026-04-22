@@ -1,0 +1,743 @@
+{% extends "ui/base.html" %}
+{% block title %}Parámetros | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item active">Parámetros e integraciones</li>
+  </ol>
+</nav>
+
+{# ── CABECERA ─────────────────────────────────────────────────────────────── #}
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1 class="h5 fw-bold mb-0">Parámetros e integraciones</h1>
+      <p class="text-muted small mb-0">Configuración del sistema.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if modo != "listado" %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_parametros' %}">Listado</a>
+      {% else %}
+      <a class="btn btn-joca btn-sm" href="?modo=nuevo">+ Nuevo parámetro</a>
+      {% endif %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_home' %}">Volver</a>
+    </div>
+  </div>
+</div>
+
+{# ── MENSAJES ─────────────────────────────────────────────────────────────── #}
+{% if messages %}
+<div class="mb-2">
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show py-2 px-3 mb-1" role="alert">
+    {{ msg }}
+    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO LISTADO                                                               #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% if modo == "listado" %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="h6 fw-bold mb-0">Parámetros del sistema</h2>
+      <span class="small text-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    </div>
+    <table class="table table-sm align-middle mb-2">
+      <thead class="table-light">
+        <tr>
+          <th>Categoría</th>
+          <th>Clave</th>
+          <th>Valor</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in page_obj %}
+        <tr>
+          <td><span class="badge bg-secondary">{{ p.categoria }}</span></td>
+          <td class="fw-semibold">{{ p.clave }}</td>
+          <td class="text-truncate" style="max-width:160px" title="{{ p.valor }}">{{ p.valor|default:"—" }}</td>
+          <td>
+            {% if p.activo %}<span class="badge bg-success">Activo</span>
+            {% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <a class="btn btn-outline-secondary btn-sm" href="?modo=editar&id={{ p.pk }}">Editar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted small">Sin parámetros registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex gap-2">
+        {% if page_obj.has_previous %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+        {% endif %}
+      </div>
+      <small class="text-muted">{{ page_obj.paginator.count }} registros en total</small>
+    </div>
+  </div>
+</div>
+
+{# Accesos directos por categoría #}
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-2">Configuración por categoría</h2>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-secondary btn-sm" href="?modo=inst">Institución</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?modo=periodo">Período académico</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?modo=smtp">SMTP</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?modo=pasarela">Pasarela de pago</a>
+      <a class="btn btn-outline-secondary btn-sm" href="?modo=catalogos">Catálogos maestros</a>
+    </div>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO NUEVO PARÁMETRO                                                       #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "nuevo" %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-3">Nuevo parámetro</h2>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="nuevo_param">
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-bold">Categoría</label>
+        <select class="form-select form-select-sm" name="categoria" required>
+          {% for val, label in categoria_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Clave</label>
+        <input class="form-control form-control-sm" name="clave" maxlength="80" required placeholder="ej. smtp_host">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Valor</label>
+        <input class="form-control form-control-sm" name="valor" maxlength="255" required>
+      </div>
+      <div class="col-6 col-md-1 form-check mt-md-4 pt-md-1">
+        <input class="form-check-input" type="checkbox" name="activo" id="activo_nuevo" checked>
+        <label class="form-check-label" for="activo_nuevo">Activo</label>
+      </div>
+      <div class="col-12 d-flex gap-2 mt-1">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar parámetro</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_parametros' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO EDITAR PARÁMETRO                                                      #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "editar" and param_editar %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-3">Editar parámetro: <span class="text-primary">{{ param_editar.clave }}</span></h2>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="editar_param">
+      <input type="hidden" name="param_id" value="{{ param_editar.pk }}">
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-bold">Categoría</label>
+        <select class="form-select form-select-sm" name="categoria" required>
+          {% for val, label in categoria_choices %}
+          <option value="{{ val }}" {% if val == param_editar.categoria %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Clave</label>
+        <input class="form-control form-control-sm" name="clave" maxlength="80" required value="{{ param_editar.clave }}">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Valor</label>
+        <input class="form-control form-control-sm" name="valor" maxlength="255" required value="{{ param_editar.valor }}">
+      </div>
+      <div class="col-6 col-md-1 form-check mt-md-4 pt-md-1">
+        <input class="form-check-input" type="checkbox" name="activo" id="activo_editar"
+          {% if param_editar.activo %}checked{% endif %}>
+        <label class="form-check-label" for="activo_editar">Activo</label>
+      </div>
+      <div class="col-12 d-flex gap-2 mt-1">
+        <button class="btn btn-joca btn-sm" type="submit">Actualizar parámetro</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_parametros' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO INSTITUCIÓN                                                           #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "inst" %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-3">Institución</h2>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="institucion">
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Nombre institución</label>
+        <input class="form-control form-control-sm" name="institucion_nombre" maxlength="120"
+          value="{{ values.institucion_nombre }}" required>
+      </div>
+      <div class="col-12 col-lg-3">
+        <label class="form-label fw-bold">RFC</label>
+        <input class="form-control form-control-sm" name="institucion_rfc" maxlength="20"
+          value="{{ values.institucion_rfc }}">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Dirección</label>
+        <input class="form-control form-control-sm" name="institucion_direccion" maxlength="255"
+          value="{{ values.institucion_direccion }}">
+      </div>
+      <div class="col-12 col-lg-1 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO PERIODO                                                               #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "periodo" %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-3">Período académico</h2>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="periodo">
+      <div class="col-12 col-lg-3">
+        <label class="form-label fw-bold">Período activo (YYYY-MM)</label>
+        <input class="form-control form-control-sm" name="periodo_activo" maxlength="7"
+          value="{{ values.periodo_activo }}" placeholder="2026-03" required>
+      </div>
+      <div class="col-12 col-lg-3">
+        <label class="form-label fw-bold">Inicio</label>
+        <input class="form-control form-control-sm" type="date" name="periodo_inicio"
+          value="{{ values.periodo_inicio }}">
+      </div>
+      <div class="col-12 col-lg-3">
+        <label class="form-label fw-bold">Fin</label>
+        <input class="form-control form-control-sm" type="date" name="periodo_fin"
+          value="{{ values.periodo_fin }}">
+      </div>
+      <div class="col-12 col-lg-3 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO SMTP                                                                  #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "smtp" %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-2">SMTP</h2>
+    <p class="text-muted small mb-2">
+      Última prueba: <strong>{{ values.smtp_test_status }}</strong>
+      {% if values.smtp_tested_at %}({{ values.smtp_tested_at }}){% endif %}
+      — {{ values.smtp_test_message }}
+    </p>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="smtp">
+      <div class="col-12 col-lg-3">
+        <label class="form-label fw-bold">Host</label>
+        <input class="form-control form-control-sm" name="smtp_host" maxlength="120"
+          value="{{ values.smtp_host }}" required>
+      </div>
+      <div class="col-6 col-lg-2">
+        <label class="form-label fw-bold">Puerto</label>
+        <input class="form-control form-control-sm" name="smtp_port" maxlength="5"
+          value="{{ values.smtp_port }}" required>
+      </div>
+      <div class="col-6 col-lg-3">
+        <label class="form-label fw-bold">Usuario</label>
+        <input class="form-control form-control-sm" name="smtp_user" maxlength="120"
+          value="{{ values.smtp_user }}">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Remitente</label>
+        <input class="form-control form-control-sm" name="smtp_from" maxlength="120"
+          value="{{ values.smtp_from }}">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Password SMTP</label>
+        <input class="form-control form-control-sm" type="password" name="smtp_password"
+          maxlength="180" value="{{ values.smtp_password }}">
+      </div>
+      <div class="col-6 col-lg-2 form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="smtp_enabled" id="smtp_enabled"
+          {% if values.smtp_enabled == '1' %}checked{% endif %}>
+        <label class="form-check-label" for="smtp_enabled">Activo</label>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-outline-secondary btn-sm" type="submit" name="operation" value="test">Probar</button>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-outline-danger btn-sm" type="submit" name="operation" value="rotate">Rotar</button>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit" name="operation" value="save">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO PASARELA                                                              #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "pasarela" %}
+
+<div class="card card-soft">
+  <div class="card-body p-3">
+    <h2 class="h6 fw-bold mb-2">Pasarela de pago</h2>
+    <p class="text-muted small mb-2">
+      Última prueba: <strong>{{ values.pasarela_test_status }}</strong>
+      {% if values.pasarela_tested_at %}({{ values.pasarela_tested_at }}){% endif %}
+      — {{ values.pasarela_test_message }}
+    </p>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="pasarela">
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Proveedor</label>
+        <input class="form-control form-control-sm" name="pasarela_proveedor" maxlength="80"
+          value="{{ values.pasarela_proveedor }}" placeholder="Stripe, Conekta, etc." required>
+      </div>
+      <div class="col-12 col-lg-6">
+        <label class="form-label fw-bold">Public key</label>
+        <input class="form-control form-control-sm" name="pasarela_public_key" maxlength="180"
+          value="{{ values.pasarela_public_key }}">
+      </div>
+      <div class="col-12 col-lg-4">
+        <label class="form-label fw-bold">Secret key</label>
+        <input class="form-control form-control-sm" type="password" name="pasarela_secret_key"
+          maxlength="220" value="{{ values.pasarela_secret_key }}">
+      </div>
+      <div class="col-6 col-lg-2 form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="pasarela_enabled" id="pasarela_enabled"
+          {% if values.pasarela_enabled == '1' %}checked{% endif %}>
+        <label class="form-check-label" for="pasarela_enabled">Activa</label>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-outline-secondary btn-sm" type="submit" name="operation" value="test">Probar</button>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-outline-danger btn-sm" type="submit" name="operation" value="rotate">Rotar</button>
+      </div>
+      <div class="col-6 col-lg-2 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit" name="operation" value="save">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{# MODO CATÁLOGOS MAESTROS                                                    #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% elif modo == "catalogos" %}
+
+{# ── Navegación entre categorías ─────────────────────────────────────────── #}
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h2 class="h6 fw-bold mb-0">Catálogos maestros</h2>
+        <p class="text-muted small mb-0">Administración académica y comercial sin borrado.</p>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm {% if cat == 'cursos' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+           href="?modo=catalogos&cat=cursos">Cursos <span class="badge text-bg-light ms-1">{{ cat_counts.cursos }}</span></a>
+        <a class="btn btn-sm {% if cat == 'aulas' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+           href="?modo=catalogos&cat=aulas">Aulas <span class="badge text-bg-light ms-1">{{ cat_counts.aulas }}</span></a>
+        <a class="btn btn-sm {% if cat == 'docentes' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+           href="?modo=catalogos&cat=docentes">Docentes <span class="badge text-bg-light ms-1">{{ cat_counts.docentes }}</span></a>
+        <a class="btn btn-sm {% if cat == 'conceptos' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+           href="?modo=catalogos&cat=conceptos">Conceptos <span class="badge text-bg-light ms-1">{{ cat_counts.conceptos }}</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── CURSOS ────────────────────────────────────────────────────────────────── #}
+{% if cat == "cursos" %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 fw-bold mb-2">Nuevo curso</h3>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="catalogos">
+      <input type="hidden" name="operation" value="create_curso">
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Código</label>
+        <input class="form-control form-control-sm" name="curso_codigo" maxlength="40" required placeholder="Ej. ELEC-BAS">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Nombre</label>
+        <input class="form-control form-control-sm" name="curso_nombre" maxlength="120" required>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Descripción</label>
+        <input class="form-control form-control-sm" name="curso_descripcion" maxlength="255" placeholder="Opcional">
+      </div>
+      <div class="col-auto form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="curso_activo" id="curso_activo_new" checked>
+        <label class="form-check-label fw-bold" for="curso_activo_new">Activo</label>
+      </div>
+      <div class="col-12 col-md-1 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Código</th>
+          <th class="fw-bold">Nombre</th>
+          <th class="fw-bold text-center">Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cat_page_obj %}
+        <tr>
+          <td class="small fw-semibold">{{ c.codigo }}</td>
+          <td class="small">{{ c.nombre }}</td>
+          <td class="text-center">
+            {% if c.activo %}<span class="badge bg-success">Activo</span>
+            {% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="catalogos">
+              <input type="hidden" name="operation" value="toggle_curso">
+              <input type="hidden" name="curso_id" value="{{ c.id }}">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">
+                {% if c.activo %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted py-3 text-center">Sin cursos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "ui/_cat_pagination.html" with page_obj=cat_page_obj cat=cat only %}
+
+{# ── AULAS ─────────────────────────────────────────────────────────────────── #}
+{% elif cat == "aulas" %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 fw-bold mb-2">Nueva aula</h3>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="catalogos">
+      <input type="hidden" name="operation" value="create_aula">
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Clave</label>
+        <input class="form-control form-control-sm" name="aula_clave" maxlength="20" required placeholder="Ej. AULA-1">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-bold">Nombre</label>
+        <input class="form-control form-control-sm" name="aula_nombre" maxlength="80" required>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Capacidad</label>
+        <input class="form-control form-control-sm" name="aula_capacidad" type="number" min="0" value="0">
+      </div>
+      <div class="col-auto form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="aula_activa" id="aula_activa_new" checked>
+        <label class="form-check-label fw-bold" for="aula_activa_new">Activa</label>
+      </div>
+      <div class="col-12 col-md-1 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Clave</th>
+          <th class="fw-bold">Nombre</th>
+          <th class="fw-bold text-center">Cap.</th>
+          <th class="fw-bold text-center">Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in cat_page_obj %}
+        <tr>
+          <td class="small fw-semibold">{{ a.clave }}</td>
+          <td class="small">{{ a.nombre }}</td>
+          <td class="small text-center">{{ a.capacidad }}</td>
+          <td class="text-center">
+            {% if a.activa %}<span class="badge bg-success">Activa</span>
+            {% else %}<span class="badge bg-secondary">Inactiva</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="catalogos">
+              <input type="hidden" name="operation" value="toggle_aula">
+              <input type="hidden" name="aula_id" value="{{ a.id }}">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">
+                {% if a.activa %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted py-3 text-center">Sin aulas registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "ui/_cat_pagination.html" with page_obj=cat_page_obj cat=cat only %}
+
+{# ── DOCENTES ──────────────────────────────────────────────────────────────── #}
+{% elif cat == "docentes" %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 fw-bold mb-2">Nuevo docente</h3>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="catalogos">
+      <input type="hidden" name="operation" value="create_docente">
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-bold">Nombres</label>
+        <input class="form-control form-control-sm" name="docente_nombres" maxlength="120" required>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Ap. paterno</label>
+        <input class="form-control form-control-sm" name="docente_apellido_paterno" maxlength="80" required>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Ap. materno</label>
+        <input class="form-control form-control-sm" name="docente_apellido_materno" maxlength="80">
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Correo</label>
+        <input class="form-control form-control-sm" name="docente_correo" type="email" maxlength="120" required>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label fw-bold">Teléfono</label>
+        <input class="form-control form-control-sm" name="docente_telefono" maxlength="32" placeholder="Opcional">
+      </div>
+      <div class="col-auto form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="docente_activo" id="docente_activo_new" checked>
+        <label class="form-check-label fw-bold" for="docente_activo_new">Activo</label>
+      </div>
+      <div class="col-12 col-md-1 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Nombre completo</th>
+          <th class="fw-bold">Correo</th>
+          <th class="fw-bold">Teléfono</th>
+          <th class="fw-bold text-center">Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in cat_page_obj %}
+        <tr>
+          <td class="small fw-semibold">{{ d.nombre_completo }}</td>
+          <td class="small">{{ d.correo }}</td>
+          <td class="small">{{ d.telefono|default:"—" }}</td>
+          <td class="text-center">
+            {% if d.activo %}<span class="badge bg-success">Activo</span>
+            {% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="catalogos">
+              <input type="hidden" name="operation" value="toggle_docente">
+              <input type="hidden" name="docente_id" value="{{ d.id }}">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">
+                {% if d.activo %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted py-3 text-center">Sin docentes registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "ui/_cat_pagination.html" with page_obj=cat_page_obj cat=cat only %}
+
+{# ── CONCEPTOS ─────────────────────────────────────────────────────────────── #}
+{% elif cat == "conceptos" %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 fw-bold mb-2">Nuevo concepto de cobro</h3>
+    <form method="post" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="catalogos">
+      <input type="hidden" name="operation" value="create_concepto">
+      <div class="col-12 col-md-5">
+        <label class="form-label fw-bold">Concepto</label>
+        <input class="form-control form-control-sm" name="concepto_nombre" maxlength="80" required>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label fw-bold">Precio</label>
+        <input class="form-control form-control-sm" name="concepto_precio" type="number" step="0.01" min="0.01" value="0.00" required>
+      </div>
+      <div class="col-auto form-check mt-md-4">
+        <input class="form-check-input" type="checkbox" name="concepto_activo" id="concepto_activo_new" checked>
+        <label class="form-check-label fw-bold" for="concepto_activo_new">Activo</label>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Concepto</th>
+          <th class="fw-bold text-end">Precio</th>
+          <th class="fw-bold text-center">Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in cat_page_obj %}
+        <tr>
+          <td class="small fw-semibold">{{ c.nombre }}</td>
+          <td class="small text-end">${{ c.precio }}</td>
+          <td class="text-center">
+            {% if c.activo %}<span class="badge bg-success">Activo</span>
+            {% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="section" value="catalogos">
+              <input type="hidden" name="operation" value="toggle_concepto">
+              <input type="hidden" name="concepto_id" value="{{ c.id }}">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">
+                {% if c.activo %}Desactivar{% else %}Activar{% endif %}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted py-3 text-center">Sin conceptos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "ui/_cat_pagination.html" with page_obj=cat_page_obj cat=cat only %}
+
+{# ── RESUMEN (sin cat seleccionado) ───────────────────────────────────────── #}
+{% else %}
+<div class="row g-2">
+  <div class="col-6 col-md-3">
+    <a href="?modo=catalogos&cat=cursos" class="text-decoration-none">
+      <div class="card card-soft text-center py-3">
+        <div class="fw-bold fs-4">{{ cat_counts.cursos }}</div>
+        <div class="small text-muted">Cursos</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="?modo=catalogos&cat=aulas" class="text-decoration-none">
+      <div class="card card-soft text-center py-3">
+        <div class="fw-bold fs-4">{{ cat_counts.aulas }}</div>
+        <div class="small text-muted">Aulas</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="?modo=catalogos&cat=docentes" class="text-decoration-none">
+      <div class="card card-soft text-center py-3">
+        <div class="fw-bold fs-4">{{ cat_counts.docentes }}</div>
+        <div class="small text-muted">Docentes</div>
+      </div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="?modo=catalogos&cat=conceptos" class="text-decoration-none">
+      <div class="card card-soft text-center py-3">
+        <div class="fw-bold fs-4">{{ cat_counts.conceptos }}</div>
+        <div class="small text-muted">Conceptos</div>
+      </div>
+    </a>
+  </div>
+</div>
+{% endif %}
+
+
+{# FALLBACK                                                                   #}
+{# ═══════════════════════════════════════════════════════════════════════════ #}
+{% else %}
+<div class="alert alert-warning py-2">
+  Modo no reconocido.
+  <a href="{% url 'ui:gobierno_parametros' %}">Volver al listado</a>.
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "ui/base.html" %}
+{% block title %}Roles asignados | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item active">Roles asignados</li>
+  </ol>
+</nav>
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h5 mb-0 fw-bold">Roles asignados</h1>
+      <p class="small text-muted mb-0">Asignaciones usuario → rol activas.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'ui:gobierno_roles_asignar' %}" class="btn btn-joca btn-sm">+ Asignar rol</a>
+      <a href="{% url 'ui:gobierno_home' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags|default:'info' }} py-2">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Usuario</th>
+          <th class="fw-bold">Nombre</th>
+          <th class="fw-bold">Rol</th>
+          <th class="fw-bold">Código rol</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ur in page_obj %}
+        <tr>
+          <td class="align-middle">{{ ur.usuario.username }}</td>
+          <td class="align-middle small">{{ ur.usuario.get_full_name|default:"—" }}</td>
+          <td class="align-middle">{{ ur.rol.nombre }}</td>
+          <td class="align-middle"><span class="badge text-bg-light">{{ ur.rol.codigo }}</span></td>
+          <td class="align-middle text-end">
+            <form method="post" action="{% url 'ui:gobierno_roles_retirar' pk=ur.pk %}" class="d-inline">
+              {% csrf_token %}
+              <button class="btn btn-outline-danger btn-sm" type="submit"
+                onclick="return confirm('¿Retirar el rol {{ ur.rol.nombre }} de {{ ur.usuario.username }}?')">
+                Retirar
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-3">Sin asignaciones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_previous or page_obj.has_next %}
+<div class="d-flex justify-content-between align-items-center">
+  <span class="small text-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  <div class="d-flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?p={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-sm">← Anterior</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?p={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-sm">Siguiente →</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}

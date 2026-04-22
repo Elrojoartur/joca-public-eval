@@ -1,0 +1,37 @@
+{% extends 'ui/base.html' %}
+{% block title %}Configuración | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<h1 class="h4 mb-2">Configuración y gobierno</h1>
+<p class="text-muted">Incluye filtros por fecha para bitácora (recomendación del comité).</p>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-12 col-md-3">
+        <label class="form-label">Desde</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Hasta</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Módulo</label>
+        <select class="form-select">
+          <option>Todos</option>
+          <option>Escolar</option>
+          <option>Ventas</option>
+          <option>Reportes</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 d-flex align-items-end">
+        <button class="btn btn-outline-primary w-100" onclick="jocaToast('Listo: filtros aplicados (demo).')">Aplicar
+          filtros</button>
+      </div>
+    </div>
+    <hr>
+    <button class="btn btn-outline-secondary" onclick="jocaToast('Descarga CSV (demo).')">Exportar CSV</button>
+    <button class="btn btn-outline-secondary" onclick="jocaToast('Descarga PDF (demo).')">Exportar PDF</button>
+  </div>
+</div>
+{% endblock %}

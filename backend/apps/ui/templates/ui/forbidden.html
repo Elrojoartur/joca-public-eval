@@ -1,0 +1,15 @@
+{% extends "ui/base.html" %}
+{% block title %}Acceso restringido | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4">
+  <h1 class="h5 mb-2">Acceso restringido</h1>
+  <p class="muted mb-3">
+    Tu rol actual (<strong>{{ role }}</strong>) no tiene acceso a esta sección.
+  </p>
+  <p class="muted mb-4">
+    Roles permitidos: <strong>{{ allowed }}</strong>
+  </p>
+  <a class="btn btn-joca btn-sm text-white" href="/panel/">Volver al panel</a>
+</div>
+{% endblock %}

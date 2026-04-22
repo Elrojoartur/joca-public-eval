@@ -1,0 +1,134 @@
+{% extends "ui/base.html" %}
+{% block title %}Bitácora de cambios | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item active">Bitácora de cambios</li>
+  </ol>
+</nav>
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h5 mb-0 fw-bold">Bitácora de cambios</h1>
+      <p class="small text-muted mb-0">Trazabilidad de eventos del sistema.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary btn-sm"
+        href="{% url 'ui:gobierno_auditoria' %}?{{ filtros_qs }}&export=csv">CSV</a>
+      <a class="btn btn-outline-secondary btn-sm"
+        href="{% url 'ui:gobierno_auditoria' %}?{{ filtros_qs }}&export=pdf">PDF</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_home' %}">Volver</a>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags|default:'info' }} py-2">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+{# Filtros compactos #}
+<div class="card card-soft mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end" novalidate>
+      <div class="col-6 col-md-3 col-lg-2">
+        <label class="form-label small fw-bold mb-1">Actor</label>
+        <input class="form-control form-control-sm" name="actor" placeholder="usuario" value="{{ filtros.actor|default:'' }}">
+      </div>
+      <div class="col-6 col-md-3 col-lg-2">
+        <label class="form-label small fw-bold mb-1">Acción</label>
+        <input class="form-control form-control-sm" name="accion" placeholder="p. ej. ROL_ASIGNAR" value="{{ filtros.accion|default:'' }}">
+      </div>
+      <div class="col-6 col-md-2 col-lg-2">
+        <label class="form-label small fw-bold mb-1">Resultado</label>
+        <select class="form-select form-select-sm" name="resultado">
+          <option value="">Todos</option>
+          <option value="ok" {% if filtros.resultado == 'ok' %}selected{% endif %}>ok</option>
+          <option value="error" {% if filtros.resultado == 'error' %}selected{% endif %}>error</option>
+          <option value="denied" {% if filtros.resultado == 'denied' %}selected{% endif %}>Denegado</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2 col-lg-2">
+        <label class="form-label small fw-bold mb-1">Desde</label>
+        <input class="form-control form-control-sm" type="date" name="fecha_desde" value="{{ filtros.fecha_desde|default:'' }}">
+      </div>
+      <div class="col-6 col-md-2 col-lg-2">
+        <label class="form-label small fw-bold mb-1">Hasta</label>
+        <input class="form-control form-control-sm" type="date" name="fecha_hasta" value="{{ filtros.fecha_hasta|default:'' }}">
+      </div>
+      <div class="col-6 col-md-1 col-lg-2 d-flex gap-1">
+        <button class="btn btn-joca btn-sm" type="submit">Filtrar</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:gobierno_auditoria' %}">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">#</th>
+          <th class="fw-bold">Actor</th>
+          <th class="fw-bold">Acción</th>
+          <th class="fw-bold">Entidad</th>
+          <th class="fw-bold text-center">Resultado</th>
+          <th class="fw-bold">Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in page_obj %}
+        <tr>
+          <td class="align-middle text-muted small">{{ e.id }}</td>
+          <td class="align-middle small">{{ e.actor|default:"—" }}</td>
+          <td class="align-middle small" style="max-width:180px;word-break:break-all;">{{ e.accion }}</td>
+          <td class="align-middle small">{{ e.entidad }}{% if e.entidad_id %} <span class="text-muted">({{ e.entidad_id }})</span>{% endif %}</td>
+          <td class="align-middle text-center">
+            {% if e.resultado == 'ok' %}
+            <span class="badge bg-success">ok</span>
+            {% elif e.resultado == 'error' %}
+            <span class="badge bg-danger">error</span>
+            {% elif e.resultado == 'denied' %}
+            <span class="badge bg-warning text-dark">Denegado</span>
+            {% else %}
+            <span class="badge bg-secondary">{{ e.resultado }}</span>
+            {% endif %}
+          </td>
+          <td class="align-middle small text-nowrap">
+            {{ e.creado_en|date:"d/m/Y H:i" }}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">Sin eventos para los filtros aplicados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_previous or page_obj.has_next %}
+<div class="d-flex justify-content-between align-items-center">
+  <span class="small text-muted">
+    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    ({{ page_obj.paginator.count }} evento{{ page_obj.paginator.count|pluralize:"s" }})
+  </span>
+  <div class="d-flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?{{ filtros_qs }}{% if filtros_qs %}&{% endif %}p={{ page_obj.previous_page_number }}"
+       class="btn btn-outline-secondary btn-sm">← Anterior</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?{{ filtros_qs }}{% if filtros_qs %}&{% endif %}p={{ page_obj.next_page_number }}"
+       class="btn btn-outline-secondary btn-sm">Siguiente →</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}

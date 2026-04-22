@@ -1,0 +1,40 @@
+{% extends "ui/base.html" %}
+{% block title %}Mis boletas | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="h4 mb-1">Mis boletas</h1>
+  <p class="muted mb-0">Genera tu boleta por período.</p>
+</div>
+
+{% if not alumno %}
+  <div class="alert alert-warning">Tu cuenta no está vinculada a un registro de alumno.</div>
+  <a class="btn btn-outline-secondary btn-sm" href="/panel/alumno/">Volver</a>
+{% else %}
+  <div class="card card-soft">
+    <div class="card-body">
+      {% if periodos %}
+        <ul class="mb-0">
+          {% for p in periodos %}
+            <li class="mb-2">
+              <span class="me-2">{{ p }}</span>
+          <a href="/panel/alumno/boleta/pdf/?periodo={{ p }}" class="btn btn-sm btn-outline-primary">
+             Generar PDF
+          </a>
+              <a class="btn btn-sm btn-outline-primary" href="/panel/escolar/boleta/?alumno={{ alumno.id_alumno }}&periodo={{ p }}">
+                Generar PDF
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="text-muted">Aún no hay períodos disponibles.</div>
+      {% endif %}
+      <div class="mt-3">
+        <a class="btn btn-outline-secondary btn-sm" href="/panel/alumno/">Volver</a>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}
+

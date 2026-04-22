@@ -1,0 +1,95 @@
+{% extends "ui/base.html" %}
+{% block title %}Usuarios | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item active">Usuarios</li>
+  </ol>
+</nav>
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h5 mb-0 fw-bold">Usuarios</h1>
+      <p class="small text-muted mb-0">Listado de cuentas del sistema.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'ui:gobierno_usuarios_nuevo' %}" class="btn btn-joca btn-sm">+ Nuevo usuario</a>
+      <a href="{% url 'ui:gobierno_home' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
+    </div>
+  </div>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags|default:'info' }} py-2">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="card card-soft mb-3">
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="fw-bold">Usuario</th>
+          <th class="fw-bold">Nombre</th>
+          <th class="fw-bold">Correo</th>
+          <th class="fw-bold text-center">Estado</th>
+          <th class="fw-bold text-center">Staff</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page_obj %}
+        <tr>
+          <td class="align-middle">{{ u.username }}</td>
+          <td class="align-middle">{{ u.get_full_name|default:"—" }}</td>
+          <td class="align-middle small">{{ u.email|default:"—" }}</td>
+          <td class="align-middle text-center">
+            {% if u.is_active %}
+            <span class="badge bg-success">Activo</span>
+            {% else %}
+            <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          <td class="align-middle text-center">
+            {% if u.is_staff %}<span class="badge bg-info text-dark">Sí</span>{% else %}—{% endif %}
+          </td>
+          <td class="align-middle text-end" style="white-space:nowrap;">
+            <a href="{% url 'ui:gobierno_usuarios_editar' pk=u.pk %}" class="btn btn-outline-secondary btn-sm">Editar</a>
+            <form method="post" action="{% url 'ui:gobierno_usuarios_estado' pk=u.pk %}" class="d-inline">
+              {% csrf_token %}
+              {% if u.is_active %}
+              <button class="btn btn-outline-danger btn-sm" type="submit"
+                onclick="return confirm('¿Desactivar a {{ u.username }}?')">Desactivar</button>
+              {% else %}
+              <button class="btn btn-outline-success btn-sm" type="submit"
+                onclick="return confirm('¿Activar a {{ u.username }}?')">Activar</button>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-3">Sin usuarios registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_previous or page_obj.has_next %}
+<div class="d-flex justify-content-between align-items-center">
+  <span class="small text-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  <div class="d-flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?p={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary btn-sm">← Anterior</a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?p={{ page_obj.next_page_number }}" class="btn btn-outline-secondary btn-sm">Siguiente →</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}

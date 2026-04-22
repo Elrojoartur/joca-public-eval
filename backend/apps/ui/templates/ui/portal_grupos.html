@@ -1,0 +1,91 @@
+{% extends 'ui/base.html' %}
+{% block title %}Grupos | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="py-3">
+  <div class="card card-soft mb-2">
+    <div class="card-body py-2 d-flex justify-content-between align-items-center gap-2 flex-wrap">
+      <h1 class="h5 mb-0 fw-bold">Grupos disponibles</h1>
+      <a class="btn btn-outline-secondary btn-sm" href="/portal/">Volver al portal</a>
+    </div>
+  </div>
+
+  <div class="card card-soft">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">Curso</th>
+              <th>Período</th>
+              <th>Tipo / Turno</th>
+              <th>Horario</th>
+              <th class="text-center">Cupo</th>
+              <th class="text-center">Inscritos</th>
+              <th class="text-center">Disponible</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in grupos_page %}
+            <tr>
+              <td class="ps-3 fw-semibold">{{ g.curso|default:g.curso_codigo }}</td>
+              <td class="text-muted">{{ g.periodo }}</td>
+              <td class="text-muted">{{ g.tipo_horario }}<br><small class="text-muted">{{ g.turno }}</small></td>
+              <td class="text-muted small">
+                {% if g.horario %}
+                  {{ g.horario }}
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border" style="font-size:.65rem;">Horario por definir</span>
+                {% endif %}
+              </td>
+              <td class="text-center text-muted">{{ g.cupo }}</td>
+              <td class="text-center text-muted">{{ g.inscripciones_activas }}</td>
+              <td class="text-center">
+                {% if g.cupo_disponible > 0 %}
+                <span class="badge bg-success-subtle text-success border">{{ g.cupo_disponible }}</span>
+                {% else %}
+                <span class="badge bg-danger-subtle text-danger border">0</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if g.disponibilidad == "lleno" %}
+                <span class="badge bg-secondary-subtle text-secondary border">Grupo lleno</span>
+                {% elif g.disponibilidad == "ultimos" %}
+                <span class="badge bg-warning-subtle text-warning border">Últimos lugares</span>
+                {% else %}
+                <span class="badge bg-success-subtle text-success border">Inscripciones abiertas</span>
+                {% endif %}
+              </td>
+              <td class="pe-3 text-end">
+                {% if g.cupo_disponible > 0 %}
+                <a class="btn btn-outline-primary btn-sm py-0"
+                   href="/portal/contacto/?ref=grupo&grupo={{ g.id }}&curso={{ g.curso_codigo|urlencode }}&horario={{ g.horario|urlencode }}">Pedir información</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="ps-3 text-muted py-3">Aún no hay grupos publicados.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if grupos_page.paginator.num_pages > 1 %}
+      <nav class="px-3 py-2" aria-label="Paginación de grupos">
+        <ul class="pagination pagination-sm mb-0">
+          {% if grupos_page.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ grupos_page.previous_page_number }}">Anterior</a></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Página {{ grupos_page.number }} de {{ grupos_page.paginator.num_pages }}</span></li>
+          {% if grupos_page.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ grupos_page.next_page_number }}">Siguiente</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

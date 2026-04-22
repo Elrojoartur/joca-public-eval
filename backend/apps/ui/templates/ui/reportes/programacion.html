@@ -1,0 +1,91 @@
+{% extends "ui/base.html" %}
+{% block title %}Programación de reportes | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="h4 mb-1">Programación de envío periódico</h1>
+    <p class="muted mb-0">Configura la frecuencia, formato y destinatarios de reportes automáticos.</p>
+</div>
+
+<div class="card card-soft mb-3">
+    <div class="card-body">
+        <form method="post" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <input type="hidden" name="operation" value="save">
+            <div class="col-12 col-md-2 form-check mt-4">
+                <input class="form-check-input" type="checkbox" id="reportes_envio_activo" name="reportes_envio_activo"
+                    {% if values.reportes_envio_activo == '1' %}checked{% endif %}>
+                <label class="form-check-label" for="reportes_envio_activo">Activar</label>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label">Frecuencia</label>
+                <select class="form-select" name="reportes_envio_frecuencia">
+                    <option value="diario" {% if values.reportes_envio_frecuencia == 'diario' %}selected{% endif %}>Diario
+                    </option>
+                    <option value="semanal" {% if values.reportes_envio_frecuencia == 'semanal' %}selected{% endif %}>
+                        Semanal</option>
+                    <option value="mensual" {% if values.reportes_envio_frecuencia == 'mensual' %}selected{% endif %}>
+                        Mensual</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Hora</label>
+                <input class="form-control" type="time" name="reportes_envio_hora"
+                    value="{{ values.reportes_envio_hora }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Dia semana (0-6)</label>
+                <input class="form-control" type="number" min="0" max="6" name="reportes_envio_dia_semana"
+                    value="{{ values.reportes_envio_dia_semana }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Dia mes (1-31)</label>
+                <input class="form-control" type="number" min="1" max="31" name="reportes_envio_dia_mes"
+                    value="{{ values.reportes_envio_dia_mes }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label">Reporte</label>
+                <select class="form-select" name="reportes_envio_reporte">
+                    <option value="ejecutivo" {% if values.reportes_envio_reporte == 'ejecutivo' %}selected{% endif %}>
+                        Ejecutivo</option>
+                    <option value="academico" {% if values.reportes_envio_reporte == 'academico' %}selected{% endif %}>
+                        Academico</option>
+                    <option value="comercial" {% if values.reportes_envio_reporte == 'comercial' %}selected{% endif %}>
+                        Comercial</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label">Formato</label>
+                <select class="form-select" name="reportes_envio_formato">
+                    <option value="pdf" {% if values.reportes_envio_formato == 'pdf' %}selected{% endif %}>PDF</option>
+                    <option value="csv" {% if values.reportes_envio_formato == 'csv' %}selected{% endif %}>CSV</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-8">
+                <label class="form-label">Destinatarios (separados por coma)</label>
+                <input class="form-control" name="reportes_envio_destinatarios"
+                    value="{{ values.reportes_envio_destinatarios }}"
+                    placeholder="director@colegio.mx, admin@colegio.mx">
+            </div>
+            <div class="col-12 col-md-2 d-grid">
+                <button class="btn btn-joca" type="submit">Guardar programación</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card card-soft mb-3">
+    <div class="card-body">
+        <h2 class="h6">Ejecución manual</h2>
+        <p class="muted mb-2">Último envío: <strong>{{ values.reportes_envio_ultimo|default:'N/A' }}</strong></p>
+        <form method="post" class="d-grid d-md-block">
+            {% csrf_token %}
+            <input type="hidden" name="operation" value="send_now">
+            <button class="btn btn-outline-secondary" type="submit">Enviar ahora</button>
+        </form>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/reportes/">Volver</a>
+</div>
+{% endblock %}

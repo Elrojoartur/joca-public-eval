@@ -1,0 +1,31 @@
+{% extends "ui/base.html" %}
+{% block title %}Panel | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div>
+      <h1 class="h4 mb-1">Panel del sistema</h1>
+        <div class="muted">Sesión activa</div>
+      <div class="muted">Rol: <strong>{{ role }}</strong></div>
+    </div>
+    <div class="text-md-end muted">
+      Aquí verás solo lo que necesitas para tu trabajo.
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for c in cards %}
+  <div class="col-12 col-md-6 col-lg-4">
+    <div class="card card-soft h-100">
+      <div class="card-body">
+        <h2 class="h6 mb-2">{{ c.title }}</h2>
+        <p class="muted mb-3">{{ c.desc }}</p>
+        <a class="btn btn-joca btn-sm text-white" href="{{ c.href }}">Abrir</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

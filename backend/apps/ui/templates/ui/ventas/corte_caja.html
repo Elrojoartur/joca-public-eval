@@ -1,0 +1,118 @@
+{% extends "ui/base.html" %}
+{% block title %}Corte de caja | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="h4 mb-1">Corte de caja</h1>
+    <p class="muted mb-0">Cierre diario de operaciones comerciales.</p>
+</div>
+
+<div class="card card-soft mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+            <span class="badge text-bg-light">Fecha: {{ fecha }}</span>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="muted small">Órdenes del día</div>
+                    <div class="h5 mb-0">{{ resumen.ordenes }}</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="muted small">Monto órdenes</div>
+                    <div class="h5 mb-0">{{ resumen.monto_ordenes }}</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="muted small">Pagos del día</div>
+                    <div class="h5 mb-0">{{ resumen.pagos }}</div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="muted small">Monto pagos</div>
+                    <div class="h5 mb-0">{{ resumen.monto_pagos }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if corte_hoy %}
+        <div class="alert alert-info mb-0">
+            Corte ya registrado para hoy: {{ corte_hoy.cerrado_en|date:"Y-m-d H:i" }} por {{
+            corte_hoy.realizado_por.username|default:"sistema" }}.
+        </div>
+        {% else %}
+        <form method="post" class="row g-2 align-items-end">
+            {% csrf_token %}
+            <div class="col-12 col-lg-7">
+                <label class="form-label">Notas (opcional)</label>
+                <input class="form-control" type="text" name="notas" maxlength="255"
+                    placeholder="Observaciones del corte">
+            </div>
+            <div class="col-6 col-lg-3">
+                <label class="form-label">Confirmación</label>
+                <input class="form-control" type="text" name="confirmar" maxlength="2" placeholder="SI" required>
+            </div>
+            <div class="col-6 col-lg-2 d-grid">
+                <button class="btn btn-joca" type="submit">Realizar corte</button>
+            </div>
+        </form>
+        <p class="muted mt-2 mb-0">Después del corte se bloquean ventas y pagos del día para rol comercial.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card card-soft">
+    <div class="card-header"><h2 class="h6 mb-0">Historial de cortes</h2></div>
+    <div class="card-body table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Órdenes</th>
+                    <th>Monto órdenes</th>
+                    <th>Pagos</th>
+                    <th>Monto pagos</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in cortes_page %}
+                <tr>
+                    <td>{{ c.fecha_operacion }}</td>
+                    <td>{{ c.total_ordenes }}</td>
+                    <td>{{ c.monto_ordenes_calc }}</td>
+                    <td>{{ c.total_pagos }}</td>
+                    <td>{{ c.monto_pagos_calc }}</td>
+                    <td>{{ c.realizado_por.username|default:"sistema" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">Sin cortes registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if cortes_page.has_other_pages %}
+    <div class="card-footer d-flex gap-2">
+        {% if cortes_page.has_previous %}
+        <a class="btn btn-outline-secondary btn-sm" href="?cpage={{ cortes_page.previous_page_number }}">Anterior</a>
+        {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+        {% endif %}
+        <span class="btn btn-light btn-sm disabled">{{ cortes_page.number }}/{{ cortes_page.paginator.num_pages }}</span>
+        {% if cortes_page.has_next %}
+        <a class="btn btn-outline-secondary btn-sm" href="?cpage={{ cortes_page.next_page_number }}">Siguiente</a>
+        {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Siguiente</button>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

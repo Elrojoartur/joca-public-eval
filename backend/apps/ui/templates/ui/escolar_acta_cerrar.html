@@ -1,0 +1,49 @@
+{% extends 'ui/base.html' %}
+{% block title %}Cierre de acta | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="h4 mb-1">Cierre de acta</h1>
+    <p class="muted mb-0">Congela las calificaciones de un grupo y período. Solo abre con permisos altos.</p>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card card-soft">
+            <div class="card-body">
+                <p class="mb-2">Grupo: <strong>{{ grupo }}</strong></p>
+                <p class="mb-3">Período: <strong>{{ periodo }}</strong></p>
+
+                {% if acta %}
+                <div class="alert alert-info" role="alert">
+                    Este grupo ya tiene el acta cerrada.
+                    <div class="small text-muted">Cerrada el {{ acta.cerrada_en|date:"d/m/Y H:i" }} por {{
+                        acta.cerrada_por|default:"N/D" }}.</div>
+                    {% if acta.motivo %}
+                    <div class="small text-muted">Motivo: {{ acta.motivo }}</div>
+                    {% endif %}
+                </div>
+                <a class="btn btn-outline-secondary"
+                    href="/panel/escolar/calificaciones/?periodo={{ periodo }}">Volver</a>
+                {% else %}
+                <div class="alert alert-warning" role="alert">
+                    Al cerrar el acta ya no se podrán crear, editar o borrar calificaciones de este grupo (salvo
+                    superusuario).
+                </div>
+                <form method="post" action="?grupo={{ grupo.id }}&periodo={{ periodo }}" class="vstack gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="grupo" value="{{ grupo.id }}">
+                    <input type="hidden" name="periodo" value="{{ periodo }}">
+                    <label for="motivo" class="form-label">Motivo (opcional)</label>
+                    <textarea class="form-control" id="motivo" name="motivo" rows="3"
+                        placeholder="Ej. Cierre oficial del período" maxlength="500"></textarea>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-joca" type="submit">Confirmar cierre</button>
+                        <a class="btn btn-outline-secondary" href="/panel/escolar/calificaciones/">Cancelar</a>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

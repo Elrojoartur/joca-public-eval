@@ -1,0 +1,479 @@
+{% extends 'ui/base.html' %}
+{% block title %}Inscripciones | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<style>
+  #inscripcionesFolders .accordion-header { display: none; }
+  #ins-form-folder label,
+  #ins-edit-folder label { font-size: .82rem; font-weight: 600; margin-bottom: .15rem; }
+  #ins-form-folder .form-control, #ins-form-folder .form-select,
+  #ins-edit-folder .form-control, #ins-edit-folder .form-select { font-size: .875rem; padding: .22rem .5rem; }
+  .ins-detalle-card {
+    background: #f8f9fa; border: 1px solid #dee2e6; border-radius: .375rem;
+    padding: .6rem .85rem; font-size: .82rem;
+  }
+  .ins-detalle-card .ins-label {
+    color: #6c757d; font-size: .72rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .03em; margin-bottom: .05rem;
+  }
+  .ins-detalle-card .ins-value { font-weight: 500; }
+  .table-ins td, .table-ins th { padding-top: .28rem; padding-bottom: .28rem; vertical-align: middle; font-size: .8rem; }
+  .table-ins .col-alumno { min-width: 160px; max-width: 200px; }
+  .table-ins .col-acciones { white-space: nowrap; }
+</style>
+
+<div class="page-header mb-1">
+  <h1 class="h4 mb-1">Inscripciones</h1>
+  <p class="muted mb-0">Asigna alumnos a grupos, controla cupos y administra altas y bajas.</p>
+</div>
+
+<div class="card card-soft mb-2">
+  <div class="card-body py-1 px-2">
+    <p class="small text-muted mb-1">Secciones</p>
+    <div class="d-flex flex-wrap gap-1">
+      <button class="btn btn-outline-secondary btn-sm" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-filtros-folder">Filtros</button>
+      <button class="btn btn-outline-secondary btn-sm" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-form-folder">Registrar inscripción</button>
+      {% if editing_inscripcion %}
+      <button class="btn btn-outline-warning btn-sm" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-edit-folder">Editar inscripción</button>
+      {% endif %}
+      <button class="btn btn-outline-secondary btn-sm" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-lista-folder">Listado</button>
+    </div>
+  </div>
+</div>
+
+<div class="accordion" id="inscripcionesFolders">
+  {# ── FILTROS ─────────────────────────────────────────────────────────── #}
+  <div class="accordion-item mb-2">
+    <h2 class="accordion-header" id="ins-filtros-heading">
+      <button class="accordion-button py-2" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-filtros-folder">Filtros</button>
+    </h2>
+    <div id="ins-filtros-folder" class="accordion-collapse collapse show"
+      aria-labelledby="ins-filtros-heading">
+      <div class="accordion-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+          <div class="col-12 col-lg-3">
+            <label class="form-label">Período</label>
+            <select name="periodo" class="form-select form-select-sm">
+              <option value="">Todos</option>
+              {% for p in periodos %}
+                <option value="{{ p }}" {% if periodo_filtro == p %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-lg-4">
+            <label class="form-label">Grupo</label>
+            <select name="grupo_id" class="form-select form-select-sm">
+              <option value="">Todos</option>
+              {% for g in grupos_filtro %}
+                <option value="{{ g.id }}"
+                  {% if grupo_filtro and grupo_filtro|stringformat:"s" == g.id|stringformat:"s" %}selected{% endif %}>
+                  {{ g.periodo_ref.codigo|default:"" }} · Grupo {{ g.id }}{% if g.curso_ref %} — {{ g.curso_ref.codigo }}{% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-6 col-lg-2">
+            <label class="form-label">Estado</label>
+            <select name="estado" class="form-select form-select-sm">
+              <option value="">Todos</option>
+              {% for value, label in estado_choices %}
+                <option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-6 col-lg-1">
+            <label class="form-label">Desde</label>
+            <input type="date" class="form-control form-control-sm" name="desde" value="{{ fecha_desde|date:'Y-m-d' }}">
+          </div>
+          <div class="col-6 col-lg-1">
+            <label class="form-label">Hasta</label>
+            <input type="date" class="form-control form-control-sm" name="hasta" value="{{ fecha_hasta|date:'Y-m-d' }}">
+          </div>
+          <div class="col-12 col-lg-1 d-flex gap-1">
+            <button class="btn btn-outline-primary btn-sm flex-grow-1" type="submit">Filtrar</button>
+            <a class="btn btn-outline-secondary btn-sm" href="/panel/escolar/inscripciones/">✕</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# ── EDITAR ──────────────────────────────────────────────────────────── #}
+  <div class="accordion-item mb-2">
+    <h2 class="accordion-header" id="ins-edit-heading">
+      <button class="accordion-button {% if not editing_inscripcion %}collapsed{% endif %} py-2" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-edit-folder">Editar inscripción</button>
+    </h2>
+    <div id="ins-edit-folder" class="accordion-collapse collapse {% if editing_inscripcion %}show{% endif %}"
+      aria-labelledby="ins-edit-heading">
+      <div class="accordion-body py-2">
+        {% if editing_inscripcion %}
+        <form method="post" class="vstack gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="editar">
+          <input type="hidden" name="id_inscripcion" value="{{ editing_inscripcion.id }}">
+          <input type="hidden" name="periodo" value="{{ periodo_filtro }}">
+          <input type="hidden" name="grupo_id" value="{{ grupo_filtro }}">
+          <input type="hidden" name="estado" value="{{ estado_filtro }}">
+          <input type="hidden" name="desde" value="{{ fecha_desde|date:'Y-m-d' }}">
+          <input type="hidden" name="hasta" value="{{ fecha_hasta|date:'Y-m-d' }}">
+          <div>
+            <label class="form-label">Alumno actual</label>
+            <input class="form-control form-control-sm" type="text" value="{{ editing_inscripcion.alumno }}" disabled>
+          </div>
+          <div>
+            <label class="form-label">Grupo destino</label>
+            <select name="grupo_id_editar" class="form-select form-select-sm" required>
+              {% for g in grupos_creacion %}
+              <option value="{{ g.id }}" {% if editing_inscripcion.grupo_id == g.id %}selected{% endif %}>
+                {{ g.periodo_ref.codigo|default:"" }} — {{ g.curso_ref.codigo|default:"Grupo" }} ({{ g.id }})
+                · {{ g.cupo_disponible }}/{{ g.cupo }} disponibles
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-joca btn-sm" type="submit">Guardar edición</button>
+            <a class="btn btn-outline-secondary btn-sm" href="/panel/escolar/inscripciones/">Cancelar</a>
+          </div>
+        </form>
+        {% else %}
+        <p class="text-muted mb-0 small">Selecciona "Editar" en una inscripción para cargar el formulario.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ── REGISTRAR ───────────────────────────────────────────────────────── #}
+  <div class="accordion-item mb-2">
+    <h2 class="accordion-header" id="ins-form-heading">
+      <button class="accordion-button py-2" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-form-folder">Registrar inscripción</button>
+    </h2>
+    <div id="ins-form-folder" class="accordion-collapse collapse show"
+      aria-labelledby="ins-form-heading">
+      <div class="accordion-body py-2">
+        <form method="post" class="vstack gap-2" id="form-crear-inscripcion">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="crear">
+          <input type="hidden" name="periodo" value="{{ periodo_filtro }}">
+          <input type="hidden" name="grupo_id" value="{{ grupo_filtro }}">
+          <input type="hidden" name="estado" value="{{ estado_filtro }}">
+          <input type="hidden" name="desde" value="{{ fecha_desde|date:'Y-m-d' }}">
+          <input type="hidden" name="hasta" value="{{ fecha_hasta|date:'Y-m-d' }}">
+
+          <div class="row g-2">
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Alumno</label>
+              <select name="alumno_id" id="id-alum-crear" class="form-select form-select-sm" required>
+                <option value="">Selecciona un alumno…</option>
+                {% for alumno in alumnos %}
+                  <option value="{{ alumno.pk }}"
+                    data-matricula="{{ alumno.matricula }}"
+                    data-nombre="{{ alumno.nombres }} {{ alumno.apellido_paterno }} {{ alumno.apellido_materno }}"
+                    data-tiene-insc-activa="{{ alumno.tiene_insc_activa }}">
+                    {{ alumno.matricula }} — {{ alumno.nombres }} {{ alumno.apellido_paterno }}
+                  </option>
+                {% endfor %}
+              </select>
+              <div id="alum-resumen" class="ins-detalle-card mt-2 d-none">
+                <div class="row g-2">
+                  <div class="col-5">
+                    <div class="ins-label">Matrícula</div>
+                    <div class="ins-value" id="alum-matricula">—</div>
+                  </div>
+                  <div class="col-7">
+                    <div class="ins-label">Nombre</div>
+                    <div class="ins-value" id="alum-nombre">—</div>
+                  </div>
+                </div>
+              </div>
+              <div id="alerta-alumno-inscrito" class="alert alert-warning py-2 px-3 d-none small mt-2" role="alert">
+                <strong>Atención:</strong> Este alumno ya tiene una inscripción activa. Verifica antes de crear una nueva.
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+              <label class="form-label">Grupo</label>
+              <select name="grupo_id_crear" id="id-grupo-crear" class="form-select form-select-sm" required>
+                <option value="">Selecciona un grupo…</option>
+                {% for g in grupos_creacion %}
+                  <option value="{{ g.id }}"
+                    data-curso="{{ g.curso_ref.nombre|default:'' }}"
+                    data-curso-codigo="{{ g.curso_ref.codigo|default:'' }}"
+                    data-periodo="{{ g.periodo_ref.codigo|default:'' }}"
+                    data-tipo="{{ g.get_tipo_horario_display }}"
+                    data-turno="{{ g.get_turno_display }}"
+                    data-estado="{{ g.get_estado_display }}"
+                    data-cupo="{{ g.cupo }}"
+                    data-inscritos="{{ g.inscritos }}"
+                    data-disponible="{{ g.cupo_disponible }}"
+                    data-lleno="{% if g.cupo_disponible <= 0 %}1{% else %}0{% endif %}"
+                    data-horarios="{% for h in g.horarios_activos %}{{ h.get_dia_display }} {{ h.hora_inicio|time:'H:i' }}-{{ h.hora_fin|time:'H:i' }}{% if not forloop.last %} | {% endif %}{% endfor %}">
+                    {{ g.periodo_ref.codigo|default:"" }} · {{ g.curso_ref.codigo|default:"—" }}
+                    ({{ g.cupo_disponible }}/{{ g.cupo }} disponible{{ g.cupo_disponible|pluralize }})
+                  </option>
+                {% empty %}
+                  <option value="" disabled>Sin grupos activos disponibles</option>
+                {% endfor %}
+              </select>
+              <div id="grupo-detalle" class="ins-detalle-card mt-2 d-none">
+                <div class="mb-1">
+                  <div class="ins-label">Curso</div>
+                  <div class="ins-value fw-semibold" id="g-curso">—</div>
+                </div>
+                <div class="row g-2 mb-1">
+                  <div class="col-4">
+                    <div class="ins-label">Período</div>
+                    <div class="ins-value" id="g-periodo">—</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="ins-label">Tipo horario</div>
+                    <div class="ins-value" id="g-tipo">—</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="ins-label">Turno</div>
+                    <div class="ins-value" id="g-turno">—</div>
+                  </div>
+                </div>
+                <div class="row g-2 mb-1">
+                  <div class="col-4">
+                    <div class="ins-label">Cupo total</div>
+                    <div class="ins-value" id="g-cupo-total">—</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="ins-label">Inscritos</div>
+                    <div class="ins-value" id="g-inscritos">—</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="ins-label">Disponible</div>
+                    <div class="ins-value" id="g-cupo">—</div>
+                  </div>
+                </div>
+                <div class="row g-2 mb-1">
+                  <div class="col-6">
+                    <div class="ins-label">Estado del grupo</div>
+                    <div class="ins-value" id="g-estado">—</div>
+                  </div>
+                  <div class="col-6 d-flex align-items-end">
+                    <div id="g-cupo-badge"></div>
+                  </div>
+                </div>
+                <div class="mb-0">
+                  <div class="ins-label">Horario(s)</div>
+                  <div class="ins-value" id="g-horario">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="alerta-grupo-lleno" class="alert alert-danger py-2 px-3 d-none small" role="alert">
+            <strong>Grupo lleno.</strong> No hay lugares disponibles. Selecciona otro grupo.
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="requiere_factura" id="id_requiere_factura_inscripcion">
+            <label class="form-check-label small" for="id_requiere_factura_inscripcion">
+              Requiere factura (base $1,000.00 + IVA 16%)
+            </label>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-joca btn-sm" type="submit" id="btn-crear-inscripcion">Crear inscripción</button>
+            <a class="btn btn-outline-secondary btn-sm" href="/panel/escolar/inscripciones/">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# ── LISTADO ─────────────────────────────────────────────────────────── #}
+  <div class="accordion-item mb-2">
+    <h2 class="accordion-header" id="ins-lista-heading">
+      <button class="accordion-button py-2" type="button"
+        data-bs-toggle="collapse" data-bs-target="#ins-lista-folder">Listado de inscripciones</button>
+    </h2>
+    <div id="ins-lista-folder" class="accordion-collapse collapse show"
+      aria-labelledby="ins-lista-heading">
+      <div class="accordion-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-ins align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-3 col-alumno">Alumno</th>
+                <th>Curso</th>
+                <th>Período</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th class="text-end pe-3 col-acciones">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ins in inscripciones %}
+              <tr>
+                <td class="ps-3 col-alumno">
+                  <span class="font-monospace text-muted" style="font-size:.72rem;">{{ ins.alumno.matricula }}</span>
+                  <span class="fw-semibold d-block text-truncate" style="max-width:190px;">{{ ins.alumno.nombres }} {{ ins.alumno.apellido_paterno }}</span>
+                </td>
+                <td>
+                  {% if ins.grupo.curso_ref %}
+                    <span class="badge bg-secondary-subtle text-secondary border" style="font-size:.7rem;">{{ ins.grupo.curso_ref.codigo }}</span>
+                  {% else %}
+                    <span class="text-muted fst-italic small">No registrado</span>
+                  {% endif %}
+                </td>
+                <td class="text-muted">{{ ins.grupo.periodo_ref.codigo|default:"—" }}</td>
+                <td class="text-muted">{{ ins.fecha_inscripcion|date:"d/m/Y" }}</td>
+                <td>
+                  {% if ins.estado == 'activa' %}
+                    <span class="badge bg-success-subtle text-success border">Activa</span>
+                  {% elif ins.estado == 'baja' %}
+                    <span class="badge bg-secondary-subtle text-secondary border">Baja</span>
+                  {% else %}
+                    <span class="badge bg-light text-dark">{{ ins.get_estado_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="text-end pe-3 col-acciones">
+                  <a class="btn btn-sm btn-outline-secondary py-0 px-2"
+                    href="/panel/escolar/alumnos/{{ ins.alumno.pk }}/expediente/"
+                    title="Ver expediente">Exp.</a>
+                  {% if ins.estado == 'activa' %}
+                  <form method="post" class="d-inline mb-0"
+                    onsubmit="return confirm('¿Dar de baja esta inscripción?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="baja">
+                    <input type="hidden" name="id_inscripcion" value="{{ ins.id }}">
+                    <input type="hidden" name="periodo" value="{{ periodo_filtro }}">
+                    <input type="hidden" name="grupo_id" value="{{ grupo_filtro }}">
+                    <input type="hidden" name="estado" value="{{ estado_filtro }}">
+                    <button class="btn btn-sm btn-outline-danger py-0 px-2" type="submit"
+                      title="Desactivar inscripción">Desactivar</button>
+                  </form>
+                  {% elif ins.estado == 'baja' %}
+                  <form method="post" class="d-inline mb-0"
+                    onsubmit="return confirm('¿Reactivar esta inscripción?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reactivar">
+                    <input type="hidden" name="id_inscripcion" value="{{ ins.id }}">
+                    <input type="hidden" name="periodo" value="{{ periodo_filtro }}">
+                    <input type="hidden" name="grupo_id" value="{{ grupo_filtro }}">
+                    <input type="hidden" name="estado" value="{{ estado_filtro }}">
+                    <button class="btn btn-sm btn-outline-success py-0 px-2" type="submit"
+                      title="Activar inscripción">Activar</button>
+                  </form>
+                  {% else %}
+                  <span class="text-muted small">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="ps-3 py-3 text-center text-muted">
+                  No hay inscripciones con los filtros actuales.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>{# /accordion #}
+
+<script>
+(function () {
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  // ── Alumno resumen ────────────────────────────────────────────────────
+  var alumSel = document.getElementById('id-alum-crear');
+  var alumResumen = document.getElementById('alum-resumen');
+  var alumMatricula = document.getElementById('alum-matricula');
+  var alumNombre = document.getElementById('alum-nombre');
+  var alertaAlumnoInscrito = document.getElementById('alerta-alumno-inscrito');
+
+  function actualizarAlumno() {
+    var opt = alumSel ? alumSel.options[alumSel.selectedIndex] : null;
+    if (!opt || !opt.value) {
+      if (alumResumen) alumResumen.classList.add('d-none');
+      if (alertaAlumnoInscrito) alertaAlumnoInscrito.classList.add('d-none');
+      return;
+    }
+    alumMatricula.textContent = opt.dataset.matricula || '—';
+    alumNombre.textContent = opt.dataset.nombre || '—';
+    alumResumen.classList.remove('d-none');
+    if (alertaAlumnoInscrito) {
+      var tieneInsc = parseInt(opt.dataset.tieneInscActiva || '0', 10);
+      alertaAlumnoInscrito.classList.toggle('d-none', tieneInsc === 0);
+    }
+  }
+  if (alumSel) alumSel.addEventListener('change', actualizarAlumno);
+
+  // ── Grupo detalle ────────────────────────────────────────────────────
+  var grupoSel = document.getElementById('id-grupo-crear');
+  var grupoDetalle = document.getElementById('grupo-detalle');
+  var alertaLleno = document.getElementById('alerta-grupo-lleno');
+  var btnCrear = document.getElementById('btn-crear-inscripcion');
+
+  function actualizarGrupo() {
+    var opt = grupoSel ? grupoSel.options[grupoSel.selectedIndex] : null;
+    if (!opt || !opt.value) {
+      if (grupoDetalle) grupoDetalle.classList.add('d-none');
+      if (alertaLleno) alertaLleno.classList.add('d-none');
+      if (btnCrear) btnCrear.disabled = false;
+      return;
+    }
+    var cursoCodigo = esc(opt.dataset.cursoCodigo || '');
+    var cursoNombre = esc(opt.dataset.curso || '');
+    var curso = cursoCodigo + (cursoNombre ? (' — ' + cursoNombre) : '');
+    var cupo = parseInt(opt.dataset.cupo || '0', 10);
+    var inscritos = parseInt(opt.dataset.inscritos || '0', 10);
+    var disponible = parseInt(opt.dataset.disponible || '0', 10);
+    var lleno = opt.dataset.lleno === '1';
+    var horarios = opt.dataset.horarios || 'Horario por definir';
+
+    document.getElementById('g-curso').innerHTML = curso || '—';
+    document.getElementById('g-periodo').textContent = opt.dataset.periodo || '—';
+    document.getElementById('g-tipo').textContent = opt.dataset.tipo || '—';
+    document.getElementById('g-turno').textContent = opt.dataset.turno || '—';
+    document.getElementById('g-estado').textContent = opt.dataset.estado || '—';
+    document.getElementById('g-cupo-total').textContent = cupo;
+    document.getElementById('g-inscritos').textContent = inscritos;
+    document.getElementById('g-cupo').innerHTML =
+      '<span class="' + (lleno ? 'text-danger fw-bold' : 'text-success fw-bold') + '">' +
+      disponible + '</span>';
+    document.getElementById('g-horario').textContent = horarios;
+
+    var badge = document.getElementById('g-cupo-badge');
+    if (lleno) {
+      badge.innerHTML = '<span class="badge bg-danger">Grupo lleno</span>';
+    } else if (disponible <= 3) {
+      badge.innerHTML = '<span class="badge bg-warning text-dark">Últimos lugares (' + disponible + ')</span>';
+    } else {
+      badge.innerHTML = '<span class="badge bg-success-subtle text-success border">Inscripciones abiertas</span>';
+    }
+    grupoDetalle.classList.remove('d-none');
+
+    if (lleno) {
+      alertaLleno.classList.remove('d-none');
+      if (btnCrear) btnCrear.disabled = true;
+    } else {
+      alertaLleno.classList.add('d-none');
+      if (btnCrear) btnCrear.disabled = false;
+    }
+  }
+  if (grupoSel) grupoSel.addEventListener('change', actualizarGrupo);
+})();
+</script>
+{% endblock %}
+

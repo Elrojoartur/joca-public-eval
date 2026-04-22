@@ -1,0 +1,151 @@
+{% extends "ui/base.html" %}
+{% block title %}Tablero ejecutivo | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:panel' %}">Inicio</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'ui:reportes_home' %}">Reportes</a></li>
+    <li class="breadcrumb-item active">Tablero ejecutivo</li>
+  </ol>
+</nav>
+
+{# ── CABECERA ─────────────────────────────────────────────────────────────── #}
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1 class="h5 fw-bold mb-0">Tablero ejecutivo</h1>
+      <p class="text-muted small mb-0">Resumen del estado del sistema · solo lectura.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_academico' %}">Académico</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_comercial' %}">Comercial</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_alertas' %}">Alertas</a>
+    </div>
+  </div>
+</div>
+
+{# ── KPI cards ─────────────────────────────────────────────────────────────── #}
+<div class="row g-2 mb-3">
+  {% for card in kpi_cards %}
+  <div class="col-6 col-lg-3">
+    <div class="card card-soft text-center py-3">
+      <div class="small text-muted text-uppercase" style="font-size:.7rem;letter-spacing:.05em">{{ card.label }}</div>
+      <div class="fw-bold fs-4 mb-0">{{ card.value }}</div>
+      {% if card.meta %}
+      <div class="small text-muted mt-1">{{ card.meta }}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# ── Resumen operativo + alertas ───────────────────────────────────────────── #}
+<div class="row g-2 mb-3">
+  <div class="col-12 col-md-6">
+    <div class="card card-soft h-100">
+      <div class="card-body p-3">
+        <h2 class="h6 fw-bold mb-2">Resumen operativo</h2>
+        <dl class="row row-cols-2 g-1 mb-0" style="font-size:.875rem">
+          <dt class="col text-muted">Alumnos registrados</dt><dd class="col fw-semibold">{{ kpi.alumnos }}</dd>
+          <dt class="col text-muted">Grupos configurados</dt><dd class="col fw-semibold">{{ kpi.grupos }}</dd>
+          <dt class="col text-muted">Inscripciones totales</dt><dd class="col fw-semibold">{{ kpi.inscripciones }}</dd>
+          <dt class="col text-muted">Calificaciones</dt><dd class="col fw-semibold">{{ kpi.calificaciones }}</dd>
+          <dt class="col text-muted">Pagos totales</dt><dd class="col fw-semibold">{{ kpi.pagos }}</dd>
+          <dt class="col text-muted">Órdenes POS</dt><dd class="col fw-semibold">{{ kpi.ordenes_pos }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="card card-soft h-100">
+      <div class="card-body p-3">
+        <h2 class="h6 fw-bold mb-2">Últimas calificaciones</h2>
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Alumno</th><th>Grupo</th><th class="text-end">Valor</th></tr>
+          </thead>
+          <tbody>
+            {% for c in ult_calif|slice:":3" %}
+            <tr>
+              <td class="small">{{ c.inscripcion.alumno }}</td>
+              <td class="small">{{ c.inscripcion.grupo }}</td>
+              <td class="small text-end fw-semibold">{{ c.valor }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center py-2">Sin registros.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="mt-2 text-end">
+          <a class="small" href="{% url 'ui:reporte_academico' %}">Ver reporte académico &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Pagos recientes + órdenes recientes ──────────────────────────────────── #}
+<div class="row g-2">
+  <div class="col-12 col-md-6">
+    <div class="card card-soft">
+      <div class="card-body p-3">
+        <h2 class="h6 fw-bold mb-2">Últimos pagos</h2>
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Fecha</th><th>Referencia</th><th class="text-end">Monto</th></tr>
+          </thead>
+          <tbody>
+            {% for p in ult_pagos|slice:":3" %}
+            <tr>
+              <td class="small">{{ p.fecha_pago|date:"d/m" }}</td>
+              <td class="small">{{ p.referencia|default:"—"|truncatechars:20 }}</td>
+              <td class="small text-end fw-semibold">${{ p.monto }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center py-2">Sin pagos hoy.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="mt-2 text-end">
+          <a class="small" href="{% url 'ui:reporte_comercial' %}">Ver reporte comercial &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-6">
+    <div class="card card-soft">
+      <div class="card-body p-3">
+        <h2 class="h6 fw-bold mb-2">Últimas órdenes POS</h2>
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr><th>Orden</th><th>Estado</th><th class="text-end">Total</th></tr>
+          </thead>
+          <tbody>
+            {% for o in ult_ordenes|slice:":3" %}
+            <tr>
+              <td class="small fw-semibold">#{{ o.pk }}</td>
+              <td class="small">
+                {% if o.estado == "pagada" %}<span class="badge bg-success">Pagada</span>
+                {% elif o.estado == "pendiente" %}<span class="badge bg-warning text-dark">Pendiente</span>
+                {% elif o.estado == "cancelada" %}<span class="badge bg-secondary">Cancelada</span>
+                {% else %}<span class="badge bg-info text-dark">{{ o.estado|capfirst }}</span>{% endif %}
+              </td>
+              <td class="small text-end fw-semibold">${{ o.total_calculado }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center py-2">Sin órdenes recientes.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="mt-2 text-end">
+          <a class="small" href="{% url 'ui:reporte_comercial' %}">Ver reporte comercial &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

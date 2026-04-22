@@ -1,0 +1,29 @@
+{% extends "ui/base.html" %}
+{% block title %}POS | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+    <div>
+      <h1 class="h4 mb-1">POS</h1>
+      <p class="muted mb-0">Cobro rápido y emisión de ticket.</p>
+    </div>
+    <div class="text-md-end">
+      <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a ventas</a>
+    </div>
+  </div>
+</div>
+
+<div class="card card-soft">
+  <div class="card-body">
+    <div class="muted mb-2">Endpoint sugerido:</div>
+    <code>{{ api_pos_url }}</code>
+
+    <hr>
+
+    <p class="muted mb-0">
+      Aquí haremos el flujo ORDEN_POS → PAGO → TICKET (PDF) alineado al dominio de ventas.
+    </p>
+  </div>
+</div>
+{% endblock %}

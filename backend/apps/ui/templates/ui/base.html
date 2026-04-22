@@ -1,0 +1,793 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'ui/css/joca.css' %}?v=20260318-01" rel="stylesheet">
+
+  <style>
+    /* Compactación global para reducir scroll residual */
+    main,
+    .main-content,
+    .content-wrapper,
+    .page-content,
+    .layout-content {
+        padding-top: .5rem !important;
+        padding-bottom: .5rem !important;
+    }
+
+    main .container,
+    main .container-fluid,
+    .main-content .container,
+    .main-content .container-fluid,
+    .content-wrapper .container,
+    .content-wrapper .container-fluid,
+    .page-content .container,
+    .page-content .container-fluid,
+    .layout-content .container,
+    .layout-content .container-fluid {
+        padding-top: .5rem !important;
+        padding-bottom: .5rem !important;
+    }
+
+    .page-header {
+        margin-bottom: .25rem !important;
+    }
+
+    .card {
+        margin-bottom: .5rem !important;
+    }
+
+    .card-body {
+        padding: .5rem .75rem !important;
+    }
+
+    .alert {
+        margin-bottom: .5rem !important;
+        padding: .25rem .5rem !important;
+    }
+
+    .form-label {
+        margin-bottom: .125rem !important;
+    }
+
+    .form-text {
+        margin-top: .125rem !important;
+        margin-bottom: 0 !important;
+    }
+
+    .table {
+        margin-bottom: .25rem !important;
+    }
+
+    .pagination {
+        margin-bottom: 0 !important;
+    }
+
+    .btn-sm {
+        padding: .2rem .45rem !important;
+    }
+
+    .form-control-sm,
+    .form-select-sm {
+        min-height: calc(1.5em + .35rem + 2px) !important;
+        padding-top: .15rem !important;
+        padding-bottom: .15rem !important;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body.panel-no-browser-scroll {
+      overflow: hidden;
+    }
+
+    /* Sidebar SOLO para autenticados */
+    .panel-menu-toggle {
+      display: none;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      color: #fff;
+      background: transparent;
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .panel-menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .topbar-userbox {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      white-space: nowrap;
+      max-width: 42vw;
+    }
+
+    .topbar-userbox .user {
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .topbar-userbox .role {
+      font-size: 0.76rem;
+      opacity: 0.95;
+      border-left: 1px solid rgba(255, 255, 255, 0.35);
+      padding-left: 8px;
+    }
+
+    .panel-shell { display:flex; min-height: calc(100vh - 56px); }
+    .panel-sidebar{
+      width:250px;
+      position:sticky;
+      top:56px;
+      align-self:flex-start;
+      height:calc(100vh - 56px);
+      overflow-y:auto;
+      overflow-x:hidden;
+      border-right:1px solid rgba(0,0,0,.08);
+      padding:8px;
+      background:#fff;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.65) transparent;
+    }
+    .panel-sidebar::-webkit-scrollbar { width: 6px; }
+    .panel-sidebar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.65);
+      border-radius: 999px;
+    }
+    .panel-nav{ display:flex; flex-direction:column; gap:1px; }
+    .panel-nav a{
+      display:flex; align-items:center;
+      padding:4px 6px;
+      border-radius:7px;
+      text-decoration:none;
+      color:inherit;
+      font-size:.85rem;
+      line-height:1.15;
+    }
+    .panel-nav a:hover{ background:rgba(0,0,0,.04); }
+    .panel-nav a.active{ font-weight:800; background:rgba(0,0,0,.06); }
+
+    .panel-section{
+      margin-top:3px;
+      font-size:9px;
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      opacity:.7;
+      padding:1px 6px;
+    }
+
+    .panel-main{
+      flex:1;
+      padding:8px 10px;
+      overflow-y:auto;
+      overflow-x:hidden;
+      height:calc(100vh - 56px);
+    }
+    .panel-main .main-shell{ max-width:100%; }
+    .main-shell { overflow: visible; }
+
+
+    .panel-overlay {
+      display: none;
+      position: fixed;
+      inset: 56px 0 0 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 1030;
+    }
+
+    .panel-sidebar-close {
+      display: none;
+      border: none;
+      background: transparent;
+      font-size: 1.3rem;
+      line-height: 1;
+      color: #334155;
+    }
+
+    @media (max-width: 992px){
+      .panel-shell{ flex-direction:column; }
+      .panel-menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .topbar-userbox { max-width: 55vw; }
+
+      .panel-sidebar{
+        width:250px;
+        position:fixed;
+        top:56px;
+        left:-270px;
+        height:calc(100vh - 56px);
+        overflow-y:auto;
+        overflow-x:hidden;
+        z-index: 1040;
+        transition:left .2s ease-in-out;
+        border-right:none;
+        border-bottom:1px solid rgba(0,0,0,.08);
+      }
+
+      .panel-sidebar.is-open { left: 0; }
+
+      .panel-sidebar-close { display: inline-block; }
+
+      body.panel-nav-open { overflow: hidden; }
+
+      body.panel-nav-open .panel-overlay { display: block; }
+    }
+  </style>
+</head>
+
+<body class="{% if request.user.is_authenticated %}panel-no-browser-scroll{% endif %}">
+
+  <!-- TOPBAR -->
+  <nav class="navbar navbar-expand-lg navbar-joca">
+    <div class="container-fluid px-4">
+
+     <a class="navbar-brand fw-semibold d-flex align-items-center"
+   href="{% if request.user.is_authenticated %}{% url 'ui:panel' %}{% else %}/portal/{% endif %}">
+
+  {% if not request.user.is_authenticated %}
+    <!-- Portal público: logo visible y grande -->
+    <img src="{% static 'ui/brand/logo-institucional.png' %}"
+         alt="Logo institucional"
+         style="height:56px;width:auto;">
+  {% else %}
+    <!-- Panel: logo compacto en topbar junto al nombre del sistema -->
+    <img src="{% static 'ui/brand/logo-institucional.png' %}"
+         alt="Logo institucional"
+         style="height:30px;width:auto;margin-right:8px;">
+    <span class="text-white fw-semibold">{{ SITE_NAME }}</span>
+  {% endif %}
+
+</a>
+
+      {% if request.user.is_authenticated %}
+      <button type="button" class="panel-menu-toggle me-2 d-lg-none" id="panel-menu-toggle" aria-label="Abrir menu">☰</button>
+      {% endif %}
+
+      <div class="ms-3 d-none d-lg-block">
+        {% block topbar_message %}{% endblock %}
+      </div>
+
+      <div class="ms-auto d-flex gap-2">
+        {% if request.user.is_authenticated %}
+          <div class="topbar-userbox" title="{{ UI_USERNAME }} · {{ UI_ROLE_LABEL }}">
+            <span class="user">{{ UI_USERNAME }}</span>
+            <span class="role">{{ UI_ROLE_LABEL }}</span>
+          </div>
+          <a class="btn btn-outline-light btn-sm" href="/salir/">Salir</a>
+        {% else %}
+          <a class="btn btn-outline-light btn-sm" href="/portal/mision-vision/">Quiénes somos</a>
+          <a class="btn btn-light btn-sm" href="/acceso/">Acceso</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- TOASTS -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" id="joca-toast-stack">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="toast align-items-center text-bg-{{ message.tags|default:'primary' }} border-0"
+             role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="15000">
+          <div class="d-flex">
+            <div class="toast-body">{{ message }}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast" aria-label="Cerrar"></button>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {# ========= Abrir contenedor según autenticación (SIN duplicar blocks) ========= #}
+  {% if request.user.is_authenticated %}
+    <div class="panel-overlay" id="panel-overlay" aria-hidden="true"></div>
+    <div class="panel-shell">
+
+      <aside class="panel-sidebar" id="panel-sidebar">
+        <div class="d-flex justify-content-end d-lg-none mb-1">
+          <button type="button" class="panel-sidebar-close" id="panel-sidebar-close" aria-label="Cerrar menu">×</button>
+        </div>
+
+        {% with active=request.resolver_match.url_name %}
+        <nav class="panel-nav">
+
+          <div class="panel-section">General</div>
+          <a href="{% url 'ui:panel' %}" class="{% if active == 'panel' %}active{% endif %}">Inicio</a>
+
+          {% if UI_IS_SUPER %}
+            <a href="/admin/" class="{% if '/admin' in request.path %}active{% endif %}">Admin (Django)</a>
+          {% endif %}
+
+          {% if UI_IS_SUPER or UI_IS_DIRECTOR %}
+            <div class="panel-section">Escolar</div>
+            <a href="{% url 'ui:escolar_alumnos' %}" class="{% if active == 'escolar_alumnos' %}active{% endif %}">Alumnos</a>
+            <a href="{% url 'ui:escolar_grupos' %}" class="{% if active == 'escolar_grupos' %}active{% endif %}">Grupos</a>
+            <a href="{% url 'ui:escolar_inscripciones' %}" class="{% if active == 'escolar_inscripciones' %}active{% endif %}">Inscripciones</a>
+            <a href="{% url 'ui:escolar_calificaciones' %}" class="{% if active == 'escolar_calificaciones' %}active{% endif %}">Calificaciones</a>
+          {% endif %}
+
+          {% if UI_IS_SUPER or UI_IS_COMERCIAL %}
+            <div class="panel-section">Ventas</div>
+            <a href="{% url 'ui:ventas_catalogo' %}" class="{% if active == 'ventas_catalogo' %}active{% endif %}">Catálogo</a>
+            <a href="{% url 'ui:ventas_pos' %}" class="{% if active == 'ventas_pos' %}active{% endif %}">Ventas a alumnos</a>
+            <a href="{% url 'ui:ventas_estado_cuenta' %}" class="{% if active == 'ventas_estado_cuenta' %}active{% endif %}">Estado de cuenta</a>
+          {% endif %}
+
+          {% if UI_IS_SUPER or UI_IS_DIRECTOR or UI_IS_COMERCIAL %}
+            <div class="panel-section">Reportes y Tableros</div>
+            <a href="{% url 'ui:reporte_ejecutivo' %}" class="{% if active == 'reporte_ejecutivo' %}active{% endif %}">Tablero ejecutivo</a>
+            <a href="{% url 'ui:reporte_academico' %}" class="{% if active == 'reporte_academico' %}active{% endif %}">Académico</a>
+            <a href="{% url 'ui:reporte_comercial' %}" class="{% if active == 'reporte_comercial' %}active{% endif %}">Comercial</a>
+            <a href="{% url 'ui:reporte_alertas' %}" class="{% if active == 'reporte_alertas' %}active{% endif %}">Alertas y pendientes</a>
+          {% endif %}
+
+          {% if UI_IS_SUPER %}
+            <div class="panel-section">Usuarios y Roles</div>
+            <a href="{% url 'ui:gobierno_usuarios' %}" class="{% if active == 'gobierno_usuarios' or active == 'gobierno_usuarios_nuevo' or active == 'gobierno_usuarios_editar' %}active{% endif %}">Usuarios</a>
+            <a href="{% url 'ui:gobierno_roles' %}" class="{% if active == 'gobierno_roles' or active == 'gobierno_roles_asignar' %}active{% endif %}">Roles</a>
+            <a href="{% url 'ui:gobierno_auditoria' %}" class="{% if active == 'gobierno_auditoria' %}active{% endif %}">Bitácora</a>
+
+            <div class="panel-section">Gobierno</div>
+            <a href="{% url 'ui:gobierno_seguridad' %}" class="{% if active == 'gobierno_seguridad' %}active{% endif %}">Seguridad</a>
+            <a href="{% url 'ui:gobierno_excepciones' %}" class="{% if active == 'gobierno_excepciones' %}active{% endif %}">Excepciones</a>
+            <a href="{% url 'ui:gobierno_parametros' %}" class="{% if active == 'gobierno_parametros' %}active{% endif %}">Parámetros</a>
+            <a href="{% url 'ui:gobierno_respaldos' %}" class="{% if active == 'gobierno_respaldos' %}active{% endif %}">Respaldos</a>
+          {% endif %}
+
+          {% if UI_IS_SUPER or UI_IS_ALUMNO %}
+            <div class="panel-section">Alumno</div>
+            <a href="{% url 'ui:alumno_calificaciones' %}" class="{% if active == 'alumno_calificaciones' %}active{% endif %}">Calificaciones</a>
+            <a href="{% url 'ui:alumno_boletas' %}" class="{% if active == 'alumno_boletas' %}active{% endif %}">Boletas</a>
+          {% endif %}
+
+        </nav>
+        {% endwith %}
+      </aside>
+
+      <main class="panel-main">
+        <div class="container main-shell">
+  {% else %}
+      <main class="container main-shell">
+  {% endif %}
+
+        {# ÚNICA zona de bloques: NO se repiten #}
+        {% block content %}
+
+        {% endblock content %}
+
+  {% if request.user.is_authenticated %}
+        </div>
+      </main>
+    </div>
+  {% else %}
+      </main>
+  {% endif %}
+
+  <!-- MODAL -->
+  <div class="modal fade" id="joca-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="joca-modal-title">Aviso</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body" id="joca-modal-body"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const toastStack = document.getElementById('joca-toast-stack');
+    const bootstrapToasts = Array.from(document.querySelectorAll('.toast')).map(function (t) {
+      return new bootstrap.Toast(t);
+    });
+    bootstrapToasts.forEach(function (t) { t.show(); });
+
+    function jocaToast(message, tone = 'primary', delay = 15000) {
+      const toastEl = document.createElement('div');
+      toastEl.className = `toast align-items-center text-bg-${tone} border-0`;
+      toastEl.setAttribute('role', 'alert');
+      toastEl.setAttribute('aria-live', 'assertive');
+      toastEl.setAttribute('aria-atomic', 'true');
+      toastEl.setAttribute('data-bs-delay', delay);
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">${message}</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+      `;
+      toastStack.appendChild(toastEl);
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+      toastEl.addEventListener('hidden.bs.toast', function () { toastEl.remove(); });
+    }
+
+    const modalEl = document.getElementById('joca-modal');
+    const modal = new bootstrap.Modal(modalEl);
+    function jocaModal(title, body) {
+      document.getElementById('joca-modal-title').textContent = title;
+      document.getElementById('joca-modal-body').textContent = body;
+      modal.show();
+    }
+
+    {% if request.user.is_authenticated %}
+    // Bloquea la navegacion hacia atras en el panel autenticado.
+    (function lockBrowserBackNavigation() {
+      if (!window.history || !window.history.pushState) {
+        return;
+      }
+
+      history.replaceState({ jocaLocked: true }, '', window.location.href);
+      history.pushState({ jocaLocked: true, jocaGuard: true }, '', window.location.href);
+
+      window.addEventListener('popstate', function () {
+        window.location.replace('/salir/');
+      });
+
+      // Fuerza recarga cuando el navegador restaura desde BFCache
+      // o cuando la navegacion vuelve desde historial (back_forward).
+      window.addEventListener('pageshow', function (event) {
+        let navType = '';
+        try {
+          const entries = window.performance && performance.getEntriesByType
+            ? performance.getEntriesByType('navigation')
+            : [];
+          navType = entries && entries.length ? entries[0].type : '';
+          if (!navType && window.performance && window.performance.navigation) {
+            navType = window.performance.navigation.type === 2 ? 'back_forward' : '';
+          }
+        } catch (err) {}
+
+        if (event.persisted || navType === 'back_forward') {
+          window.location.replace('/salir/');
+        }
+      });
+    })();
+
+    (function mobileHamburgerMenu() {
+      const toggleBtn = document.getElementById('panel-menu-toggle');
+      const closeBtn = document.getElementById('panel-sidebar-close');
+      const overlay = document.getElementById('panel-overlay');
+      const sidebar = document.getElementById('panel-sidebar');
+      if (!toggleBtn || !closeBtn || !overlay || !sidebar) {
+        return;
+      }
+
+      function openMenu() {
+        sidebar.classList.add('is-open');
+        document.body.classList.add('panel-nav-open');
+      }
+
+      function closeMenu() {
+        sidebar.classList.remove('is-open');
+        document.body.classList.remove('panel-nav-open');
+      }
+
+      toggleBtn.addEventListener('click', openMenu);
+      closeBtn.addEventListener('click', closeMenu);
+      overlay.addEventListener('click', closeMenu);
+
+      sidebar.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+          closeMenu();
+        });
+      });
+    })();
+    {% endif %}
+
+    {% if not request.user.is_authenticated and '/portal' in request.path %}
+    // Bloquea retroceso en portal publico.
+    (function lockPortalBackNavigation() {
+      if (!window.history || !window.history.pushState) {
+        return;
+      }
+
+      history.replaceState({ portalLocked: true }, '', window.location.href);
+      history.pushState({ portalLocked: true, portalGuard: true }, '', window.location.href);
+
+      window.addEventListener('popstate', function () {
+        history.pushState({ portalLocked: true, portalGuard: true }, '', window.location.href);
+      });
+    })();
+    {% endif %}
+
+    // Compacta vistas de carpetas: solo una seccion abierta para reducir scroll vertical.
+    (function optimizeFolderAccordions() {
+      document.querySelectorAll('.folder-accordion').forEach((accordion) => {
+        const panels = Array.from(accordion.querySelectorAll('.accordion-collapse'));
+        if (!panels.length) {
+          return;
+        }
+
+        accordion.querySelectorAll('.accordion-header').forEach((header) => {
+          header.style.display = 'none';
+        });
+
+        let activePanel = panels.find((panel) => panel.classList.contains('show')) || panels[0];
+        panels.forEach((panel) => {
+          const collapse = bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false });
+          if (panel === activePanel) {
+            collapse.show();
+          } else {
+            collapse.hide();
+          }
+        });
+      });
+
+      document.querySelectorAll('.folder-shortcuts button[data-bs-target]').forEach((btn) => {
+        const targetSelector = btn.getAttribute('data-bs-target');
+        btn.addEventListener('click', function () {
+          const panel = targetSelector ? document.querySelector(targetSelector) : null;
+          if (!panel) {
+            return;
+          }
+
+          const accordion = panel.closest('.folder-accordion');
+          if (accordion) {
+            accordion.querySelectorAll('.accordion-collapse').forEach((sibling) => {
+              if (sibling === panel) {
+                return;
+              }
+              bootstrap.Collapse.getOrCreateInstance(sibling, { toggle: false }).hide();
+            });
+          }
+
+          bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false }).show();
+          const anchor = panel.closest('.accordion-item') || panel;
+          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    })();
+
+    // Validación global en formularios: estructura de caracteres y mensajes por campo.
+    (function applyGlobalInputValidation() {
+      const DEFAULT_TEXT_RULE = {
+        regex: /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ\s.,;:()#%\-_/+@]{1,250}$/,
+        placeholder: 'Ingrese texto alfanumérico con signos básicos (.,;:()#% - _ / + @)',
+        message: 'Ingrese solo letras, números y signos permitidos: . , ; : ( ) # % - _ / + @',
+      };
+
+      const DEFAULT_TEXTAREA_RULE = {
+        regex: /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ\s.,;:()#%\-_/+@\n\r]{1,2000}$/,
+        placeholder: 'Describa su información con letras, números y signos básicos',
+        message: 'Ingrese texto válido con letras, números y signos básicos permitidos.',
+      };
+
+      const FIELD_RULES = [
+        {
+          keyPattern: /(matricula|matrícula)/i,
+          regex: /^[A-Z0-9]{3,32}$/,
+          placeholder: 'Solo letras mayúsculas y números (ej. ABC1234)',
+          message: 'Ingrese letras mayúsculas y números solamente.',
+          transform: function (value) {
+            return (value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+          },
+        },
+        {
+          keyPattern: /(nombres?|apellido(_paterno|_materno)?)/i,
+          regex: /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/,
+          placeholder: 'Solo letras y espacios',
+          message: 'Ingrese letras solamente.',
+        },
+        {
+          keyPattern: /(usuario|username)/i,
+          regex: /^[A-Za-z0-9._-]{4,32}$/,
+          placeholder: 'Usuario: 4-32 con letras, números, punto, guión o _',
+          message: 'Ingrese un usuario válido de 4 a 32 caracteres.',
+        },
+        {
+          keyPattern: /(correo|email)/i,
+          regex: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+          placeholder: 'Ejemplo: usuario@dominio.com',
+          message: 'Ingrese un correo válido (ejemplo: usuario@dominio.com)',
+        },
+        {
+          keyPattern: /(telefono|teléfono|telefono_movil|celular|movil)/i,
+          regex: /^[0-9+()\-\s]{7,20}$/,
+          placeholder: 'Solo números y símbolos + ( ) -',
+          message: 'Ingrese solo números y caracteres permitidos: + ( ) -',
+        },
+        {
+          keyPattern: /(codigo_postal|c[óo]digo_postal|\bcp\b)/i,
+          regex: /^[0-9]{5}$/,
+          placeholder: 'Código postal de 5 dígitos',
+          message: 'Ingrese un código postal válido de 5 dígitos.',
+        },
+        {
+          keyPattern: /(periodo|periodo_ref)/i,
+          regex: /^\d{4}-(0[1-9]|1[0-2])$/,
+          placeholder: 'Período en formato YYYY-MM (ej. 2026-03)',
+          message: 'Ingrese el período en formato YYYY-MM.',
+        },
+        {
+          keyPattern: /(folio|referencia|codigo|clave|slug)/i,
+          regex: /^[A-Za-z0-9_-]{1,40}$/,
+          placeholder: 'Solo letras, números, guión y guión bajo',
+          message: 'Ingrese solo letras, números, guión y guión bajo.',
+          transform: function (value) {
+            return (value || '').replace(/\s+/g, '');
+          },
+        },
+        {
+          keyPattern: /\brfc\b/i,
+          regex: /^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/,
+          placeholder: 'RFC vigente (12 o 13, ej. XAXX010101000)',
+          message: 'Ingrese un RFC mexicano vigente (12 o 13 caracteres).',
+          transform: function (value) {
+            return (value || '').toUpperCase();
+          },
+        },
+        {
+          keyPattern: /\bcurp\b/i,
+          regex: /^[A-Z][AEIOUX][A-Z]{2}[0-9]{2}(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[HM](AS|BC|BS|CC|CS|CH|CL|CM|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE)[B-DF-HJ-NP-TV-Z]{3}[0-9A-Z][0-9]$/,
+          placeholder: 'CURP oficial de 18 caracteres',
+          message: 'Ingrese una CURP oficial de 18 caracteres.',
+          transform: function (value) {
+            return (value || '').toUpperCase();
+          },
+        },
+        {
+          keyPattern: /(direccion|direcci[óo]n|calle|colonia|municipio|estado|ciudad|asunto|mensaje|descripcion|observaciones|nota|comentario)/i,
+          regex: /^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ\s.,;:()#%\-_/+@]{2,250}$/,
+          placeholder: 'Letras, números y signos básicos permitidos',
+            message: 'Ingrese texto válido con letras, números y signos básicos',
+        },
+      ];
+
+      function getFieldKey(field) {
+        return [
+          field.name || '',
+          field.id || '',
+          field.getAttribute('aria-label') || '',
+          field.getAttribute('placeholder') || '',
+        ].join(' ');
+      }
+
+      function resolveRule(field) {
+        const key = getFieldKey(field);
+        const matched = FIELD_RULES.find((rule) => rule.keyPattern.test(key));
+        if (matched) {
+          return matched;
+        }
+        if (field.tagName === 'TEXTAREA') {
+          return DEFAULT_TEXTAREA_RULE;
+        }
+        if (field.tagName === 'INPUT' && (field.type || '').toLowerCase() === 'email') {
+          return FIELD_RULES.find((rule) => /(correo|email)/i.test(String(rule.keyPattern)));
+        }
+        return DEFAULT_TEXT_RULE;
+      }
+
+      function isEligibleField(field) {
+        if (!field || field.disabled || field.readOnly) {
+          return false;
+        }
+        if (field.tagName === 'TEXTAREA') {
+          return true;
+        }
+        if (field.tagName !== 'INPUT') {
+          return false;
+        }
+        const type = (field.type || 'text').toLowerCase();
+        return ['text', 'email', 'search', 'tel'].includes(type);
+      }
+
+      function applyFieldDecoration(field, rule) {
+        if (!rule || !field) {
+          return;
+        }
+
+        field.setAttribute('placeholder', rule.placeholder);
+        field.setAttribute('title', rule.message);
+        field.dataset.validationMessage = rule.message;
+
+        if (rule.keyPattern && /(correo|email)/i.test(rule.keyPattern.source)) {
+          if (field.tagName === 'INPUT') {
+            field.type = 'email';
+          }
+        }
+
+        if (field.tagName === 'INPUT' && field.type !== 'email') {
+          field.setAttribute('autocomplete', field.getAttribute('autocomplete') || 'off');
+        }
+      }
+
+      function validateField(field, rule) {
+        if (!field || !rule) {
+          return true;
+        }
+
+        const raw = field.value || '';
+        const value = raw.trim();
+
+        if (!value) {
+          field.setCustomValidity('');
+          return true;
+        }
+
+        if (rule.regex && !rule.regex.test(value)) {
+          field.setCustomValidity(rule.message);
+          return false;
+        }
+
+        field.setCustomValidity('');
+        return true;
+      }
+
+      const fields = Array.from(document.querySelectorAll('input, textarea')).filter(isEligibleField);
+
+      fields.forEach((field) => {
+        const rule = resolveRule(field);
+        if (!rule) {
+          return;
+        }
+
+        applyFieldDecoration(field, rule);
+
+        field.addEventListener('input', function () {
+          if (typeof rule.transform === 'function') {
+            const transformed = rule.transform(field.value);
+            if (transformed !== field.value) {
+              field.value = transformed;
+            }
+          }
+          validateField(field, rule);
+        });
+
+        field.addEventListener('blur', function () {
+          validateField(field, rule);
+        });
+
+        field.addEventListener('invalid', function () {
+          validateField(field, rule);
+        });
+      });
+
+      document.querySelectorAll('form').forEach((form) => {
+        form.setAttribute('novalidate', 'novalidate');
+        form.addEventListener('submit', function (event) {
+          let valid = true;
+          fields.forEach((field) => {
+            if (!form.contains(field)) {
+              return;
+            }
+            const rule = resolveRule(field);
+            if (!rule) {
+              return;
+            }
+            if (!validateField(field, rule)) {
+              valid = false;
+            }
+          });
+
+          if (!form.checkValidity() || !valid) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.reportValidity();
+          }
+        });
+      });
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

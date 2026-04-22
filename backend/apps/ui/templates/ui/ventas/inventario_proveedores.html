@@ -1,0 +1,156 @@
+{% extends "ui/base.html" %}
+{% block title %}Proveedores | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h4 mb-1">HU-FUT-003 · Proveedores</h1>
+            <p class="muted mb-0">Alta rápida de proveedor para flujo de compras (demo persistida en sesión).</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-5">
+        <div class="card card-soft p-4">
+            <form method="post" class="row g-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save">
+                <input type="hidden" name="item_id" value="{% if editing_proveedor %}{{ editing_proveedor.id }}{% endif %}">
+                <div class="col-12">
+                    <label class="form-label">Nombre proveedor</label>
+                    <input class="form-control" type="text" name="nombre" maxlength="120" required value="{% if editing_proveedor %}{{ editing_proveedor.nombre }}{% endif %}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">RFC (opcional)</label>
+                    <input class="form-control" type="text" name="rfc" maxlength="13" placeholder="RFC vigente (12 o 13)" value="{% if editing_proveedor %}{{ editing_proveedor.rfc }}{% endif %}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">CURP (opcional)</label>
+                    <input class="form-control" type="text" name="curp" maxlength="18" placeholder="CURP oficial de 18 caracteres" value="{% if editing_proveedor %}{{ editing_proveedor.curp }}{% endif %}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Contacto (opcional)</label>
+                    <input class="form-control" type="text" name="contacto" maxlength="120" value="{% if editing_proveedor %}{{ editing_proveedor.contacto }}{% endif %}">
+                </div>
+                <div class="col-12 d-flex gap-2 flex-wrap">
+                    <button class="btn btn-joca text-white" type="submit">{% if editing_proveedor %}Actualizar proveedor{% else %}Pre-registrar proveedor{% endif %}</button>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-proveedor-sugerir">Generar sugerencia RFC/CURP</button>
+                    {% if editing_proveedor %}
+                    <a class="btn btn-outline-secondary" href="/panel/ventas/inventario/proveedores/">Cancelar edición</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <div class="card card-soft p-4">
+            <h2 class="h6">Proveedores capturados (sesión)</h2>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>RFC</th>
+                            <th>CURP</th>
+                            <th>Contacto</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in proveedores %}
+                        <tr>
+                            <td>{{ p.nombre }}</td>
+                            <td>{{ p.rfc|default:"-" }}</td>
+                            <td>{{ p.curp|default:"-" }}</td>
+                            <td>{{ p.contacto|default:"-" }}</td>
+                            <td class="text-end d-flex justify-content-end gap-2">
+                                <a class="btn btn-sm btn-outline-primary" href="/panel/ventas/inventario/proveedores/?edit={{ p.id }}">Editar</a>
+                                <form method="post" class="d-inline" onsubmit="return confirm('¿Eliminar proveedor?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="item_id" value="{{ p.id }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-muted">Sin proveedores capturados en esta sesión.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+    function sanitizeWord(value) {
+        return (value || '')
+            .toUpperCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^A-ZÑ\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function firstVowel(text) {
+        const src = (text || '').toUpperCase();
+        for (let i = 1; i < src.length; i += 1) {
+            if ('AEIOU'.includes(src[i])) return src[i];
+        }
+        return 'X';
+    }
+
+    function firstConsonant(text) {
+        const src = (text || '').toUpperCase();
+        for (let i = 1; i < src.length; i += 1) {
+            if ('BCDFGHJKLMNÑPQRSTVWXYZ'.includes(src[i])) return src[i];
+        }
+        return 'X';
+    }
+
+    function buildRfc(source) {
+        const parts = sanitizeWord(source).split(' ').filter(Boolean);
+        const p = parts[0] || 'X';
+        const m = parts[1] || 'X';
+        const n = parts[2] || parts[0] || 'X';
+        return ((p[0] || 'X') + firstVowel(p) + (m[0] || 'X') + (n[0] || 'X')).slice(0, 4) + '010101AAA';
+    }
+
+    function buildCurp(source) {
+        const parts = sanitizeWord(source).split(' ').filter(Boolean);
+        const p = parts[0] || 'X';
+        const m = parts[1] || 'X';
+        const n = parts[2] || parts[0] || 'X';
+        const initials = (p[0] || 'X') + firstVowel(p) + (m[0] || 'X') + (n[0] || 'X');
+        const inner = firstConsonant(p) + firstConsonant(m) + firstConsonant(n);
+        return initials + '010101HNE' + inner + '00';
+    }
+
+    const btn = document.getElementById('btn-proveedor-sugerir');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        const nombre = document.querySelector('input[name="nombre"]')?.value || '';
+        const rfc = document.querySelector('input[name="rfc"]');
+        const curp = document.querySelector('input[name="curp"]');
+        if (rfc && !rfc.value.trim()) {
+            rfc.value = buildRfc(nombre);
+        }
+        if (curp && !curp.value.trim()) {
+            curp.value = buildCurp(nombre);
+        }
+    });
+})();
+</script>
+{% endblock %}

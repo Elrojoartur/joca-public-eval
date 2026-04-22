@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% block title %}Datos Fiscales | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="card card-soft p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h4 mb-1">HU-FUT-005 · Datos fiscales</h1>
+            <p class="muted mb-0">Captura opcional para facturación en flujo de venta.</p>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+    </div>
+</div>
+
+<div class="card card-soft p-4">
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-12 form-check">
+            <input class="form-check-input" type="checkbox" id="req_fact" name="requiere_factura">
+            <label class="form-check-label" for="req_fact">El cliente requiere factura</label>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Razón social</label>
+            <input class="form-control" type="text" name="razon_social" maxlength="160">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">RFC</label>
+            <input class="form-control" type="text" name="rfc" maxlength="13" placeholder="AAA010101AAA">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">CP fiscal</label>
+            <input class="form-control" type="text" name="cp_fiscal" maxlength="5" placeholder="00000">
+        </div>
+        <div class="col-12">
+            <button class="btn btn-joca text-white" type="submit">Guardar captura fiscal</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

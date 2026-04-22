@@ -1,0 +1,306 @@
+{% extends "ui/base.html" %}
+{% block title %}Reporte comercial | {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:panel' %}">Inicio</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'ui:reporte_ejecutivo' %}">Tableros</a></li>
+    <li class="breadcrumb-item active">Comercial</li>
+  </ol>
+</nav>
+
+{# === Cabecera === #}
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+      <h1 class="h5 fw-bold mb-0">Reporte comercial</h1>
+      <p class="text-muted small mb-0">Ventas por período, órdenes, pagos y cortes de caja.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm"
+         href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}export=csv">CSV</a>
+      <a class="btn btn-outline-secondary btn-sm"
+         href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}export=pdf">PDF</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_academico' %}">Académico</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_alertas' %}">Alertas</a>
+    </div>
+  </div>
+</div>
+
+{# === Formulario de filtros === #}
+<div class="card card-soft mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <input type="hidden" name="vista" value="{{ vista }}">
+      <div class="col-12 col-md-4">
+        <label class="form-label small mb-1">Período</label>
+        <select class="form-select form-select-sm" name="periodo">
+          <option value="">Todos</option>
+          {% for p in periodos_disponibles %}
+          <option value="{{ p }}" {% if periodo_activo == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label small mb-1">Estado de orden</label>
+        <select class="form-select form-select-sm" name="estado">
+          <option value="">Todos</option>
+          <option value="pendiente" {% if estado_activo == 'pendiente' %}selected{% endif %}>Pendiente</option>
+          <option value="parcial" {% if estado_activo == 'parcial' %}selected{% endif %}>Parcial</option>
+          <option value="pagada" {% if estado_activo == 'pagada' %}selected{% endif %}>Pagada</option>
+          <option value="cancelada" {% if estado_activo == 'cancelada' %}selected{% endif %}>Cancelada</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label small mb-1">Método de pago</label>
+        <select class="form-select form-select-sm" name="metodo">
+          <option value="">Todos</option>
+          {% for m in metodos_disponibles %}
+          <option value="{{ m }}" {% if metodo_activo == m %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button class="btn btn-joca btn-sm" type="submit">Aplicar</button>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <a class="btn btn-outline-secondary btn-sm" href="?vista={{ vista }}">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# === KPIs compactos === #}
+<div class="row g-2 mb-3">
+  {% for k,v in kpi.items %}
+  <div class="col-6 col-lg-2">
+    <div class="card card-soft text-center p-2">
+      <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;">{{ k }}</div>
+      <div class="h5 mb-0 fw-bold">{{ v }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{# === Segmentación (siempre visible) === #}
+<div class="row g-2 mb-3">
+  <div class="col-12 col-md-6">
+    <div class="card card-soft">
+      <div class="card-body">
+        <h2 class="h6 mb-2">Segmentación por estado de orden</h2>
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Estado</th><th class="text-end">Total</th><th class="text-end">Monto</th></tr></thead>
+          <tbody>
+            {% for row in ordenes_por_estado %}
+            <tr>
+              <td>{{ row.estado }}</td>
+              <td class="text-end">{{ row.total }}</td>
+              <td class="text-end">${{ row.monto|default:"0.00" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center">Sin registros.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6">
+    <div class="card card-soft">
+      <div class="card-body">
+        <h2 class="h6 mb-2">Segmentación por método de pago</h2>
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Método</th><th class="text-end">Total</th><th class="text-end">Monto</th></tr></thead>
+          <tbody>
+            {% for row in pagos_por_metodo %}
+            <tr>
+              <td>{{ row.metodo }}</td>
+              <td class="text-end">{{ row.total }}</td>
+              <td class="text-end">${{ row.monto|default:"0.00" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-muted text-center">Sin registros.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# === Navegación de vistas === #}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  <a class="btn btn-sm {% if vista == 'por_periodo' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista=por_periodo">Por período</a>
+  <a class="btn btn-sm {% if vista == 'ordenes' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista=ordenes">Órdenes</a>
+  <a class="btn btn-sm {% if vista == 'pagos' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista=pagos">Pagos</a>
+  <a class="btn btn-sm {% if vista == 'cortes' %}btn-joca{% else %}btn-outline-secondary{% endif %}"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista=cortes">Cortes de caja</a>
+</div>
+
+{# === Tabla por vista === #}
+<div class="card card-soft mb-3">
+  <div class="card-body">
+
+    {% if vista == "por_periodo" %}
+    <h2 class="h6 mb-3">Ventas por período</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Período</th>
+          <th class="text-end">Órdenes</th>
+          <th class="text-end">Monto</th>
+          <th class="text-end">Pagadas</th>
+          <th class="text-end">Pendientes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.periodo }}</td>
+          <td class="text-end">{{ row.total_ordenes }}</td>
+          <td class="text-end">${{ row.monto_ordenes|default:"0.00" }}</td>
+          <td class="text-end">{{ row.pagadas }}</td>
+          <td class="text-end">{{ row.pendientes }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted text-center py-3">Sin registros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% elif vista == "ordenes" %}
+    <h2 class="h6 mb-3">Órdenes POS</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Alumno</th>
+          <th>Estado</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.id }}</td>
+          <td>{{ row.inscripcion.alumno }}</td>
+          <td>{{ row.estado }}</td>
+          <td>{{ row.fecha_emision|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted text-center py-3">Sin registros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% elif vista == "pagos" %}
+    <h2 class="h6 mb-3">Pagos</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Método</th>
+          <th class="text-end">Monto</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.orden_id }}</td>
+          <td>{{ row.metodo }}</td>
+          <td class="text-end">${{ row.monto }}</td>
+          <td>{{ row.fecha_pago|date:"d/m/Y" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted text-center py-3">Sin registros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% elif vista == "cortes" %}
+    <h2 class="h6 mb-3">Cortes de caja</h2>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th class="text-end">Monto órdenes</th>
+          <th class="text-end">Monto pagos</th>
+          <th>Notas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page_obj %}
+        <tr>
+          <td>{{ row.fecha_operacion }}</td>
+          <td class="text-end">${{ row.monto_ordenes_calc }}</td>
+          <td class="text-end">${{ row.monto_pagos_calc }}</td>
+          <td>{{ row.notas|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-muted text-center py-3">Sin cortes de caja en el período.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+  </div>
+</div>
+
+{# === Paginación === #}
+{% if page_obj.has_other_pages %}
+<div class="d-flex gap-2 mb-3">
+  {% if page_obj.has_previous %}
+  <a class="btn btn-outline-secondary btn-sm"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista={{ vista }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+  {% else %}
+  <button class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+  {% endif %}
+  <span class="btn btn-sm disabled">Pág. {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a class="btn btn-outline-secondary btn-sm"
+     href="?{% if filtros_qs %}{{ filtros_qs }}&{% endif %}vista={{ vista }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+  {% else %}
+  <button class="btn btn-outline-secondary btn-sm" disabled>Siguiente</button>
+  {% endif %}
+</div>
+{% endif %}
+
+{# === Inscripciones como venta (compacto) === #}
+{% if inscripciones_ventas %}
+<div class="card card-soft mb-3">
+  <div class="card-body">
+    <h2 class="h6 mb-2">Inscripciones como venta (base / IVA 16% / total)</h2>
+    <table class="table table-sm mb-0">
+      <thead>
+        <tr>
+          <th>Período</th>
+          <th class="text-end">Inscrip.</th>
+          <th class="text-end">Base</th>
+          <th class="text-end">IVA 16%</th>
+          <th class="text-end">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in inscripciones_ventas %}
+        <tr>
+          <td>{{ row.periodo }}</td>
+          <td class="text-end">{{ row.total_inscripciones }}</td>
+          <td class="text-end">${{ row.monto_base }}</td>
+          <td class="text-end">${{ row.monto_iva }}</td>
+          <td class="text-end fw-bold">${{ row.total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="mt-2">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'ui:reporte_ejecutivo' %}">Volver al tablero</a>
+</div>
+{% endblock %}

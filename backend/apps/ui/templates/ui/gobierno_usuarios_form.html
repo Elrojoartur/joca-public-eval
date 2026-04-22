@@ -1,0 +1,164 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if modo == "alta" %}Nuevo usuario{% else %}Editar usuario{% endif %} | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<nav aria-label="migas" class="mb-2">
+  <ol class="breadcrumb small mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_home' %}">Gobierno</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'ui:gobierno_usuarios' %}">Usuarios</a></li>
+    <li class="breadcrumb-item active">{% if modo == "alta" %}Nuevo{% else %}Editar{% endif %}</li>
+  </ol>
+</nav>
+<div class="card card-soft p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+    <div>
+      <h1 class="h5 mb-0 fw-bold">
+        {% if modo == "alta" %}Nuevo usuario{% else %}Editar usuario — {{ usuario.username }}{% endif %}
+      </h1>
+      <p class="small text-muted mb-0">
+        {% if modo == "alta" %}Complete los datos del nuevo usuario.{% else %}Modifique los datos editables.{% endif %}
+      </p>
+    </div>
+    <a href="{% url 'ui:gobierno_usuarios' %}" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+  </div>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags|default:'info' }} py-2">{{ msg }}</div>
+{% endfor %}
+{% endif %}
+
+<div class="card card-soft">
+  <div class="card-body">
+    {% if modo == "edicion" %}
+    <div class="row g-2 mb-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-bold">Usuario</label>
+        <input class="form-control" value="{{ usuario.username }}" disabled>
+        <div class="form-text">El nombre de usuario no se puede cambiar.</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-bold">Correo</label>
+        <input class="form-control" value="{{ usuario.email|default:'' }}" disabled>
+        <div class="form-text">El correo no se puede cambiar desde aquí.</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      {% if modo == "alta" %}
+      {# ── Rol inicial ─────────────────────────────────────────────── #}
+      <div class="row g-2 mb-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold" for="id_rol_inicial">Rol inicial <span class="text-danger">*</span></label>
+          <select class="form-select" id="id_rol_inicial" name="rol_inicial" required onchange="toggleMatricula(this.value)">
+            <option value="">— Selecciona un rol —</option>
+            {% for r in roles %}
+            <option value="{{ r.pk }}" data-codigo="{{ r.codigo }}"{% if rol_id_sel == r.pk|stringformat:"s" %} selected{% endif %}>{{ r.nombre }}</option>
+            {% endfor %}
+          </select>
+          {% if rol_error %}<div class="text-danger small mt-1">{{ rol_error }}</div>{% endif %}
+          <div class="form-text">El nombre de usuario se genera automáticamente a partir del rol.</div>
+        </div>
+        <div class="col-12 col-md-6" id="div_matricula" style="display:none">
+          <label class="form-label fw-bold" for="id_matricula_alumno">Matrícula <span class="text-danger">*</span></label>
+          <input class="form-control" id="id_matricula_alumno" name="matricula_alumno"
+                 type="text" value="{{ matricula|default:'' }}" maxlength="32"
+                 placeholder="Ej. CCENT-2024-0001">
+          <div class="form-text">Para el rol Alumno el username será igual a la matrícula.</div>
+        </div>
+      </div>
+
+      {# ── Credenciales ────────────────────────────────────────────── #}
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold">{{ form.email.label }}</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold">{{ form.password1.label }}</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="text-danger small">{{ form.password1.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold">{{ form.password2.label }}</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="text-danger small">{{ form.password2.errors }}</div>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="row g-2 mb-2">
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold">{{ form.first_name.label }}</label>
+          {{ form.first_name }}
+          {% if form.first_name.errors %}<div class="text-danger small">{{ form.first_name.errors }}</div>{% endif %}
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-bold">{{ form.last_name.label }}</label>
+          {{ form.last_name }}
+          {% if form.last_name.errors %}<div class="text-danger small">{{ form.last_name.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-auto mt-2">
+          <div class="form-check">
+            {{ form.is_staff }}
+            <label class="form-check-label" for="{{ form.is_staff.id_for_label }}">
+              <strong>Acceso staff</strong>
+            </label>
+          </div>
+          {% if form.is_staff.errors %}<div class="text-danger small">{{ form.is_staff.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-joca" type="submit">
+          {% if modo == "alta" %}Crear usuario{% else %}Guardar cambios{% endif %}
+        </button>
+        <a href="{% url 'ui:gobierno_usuarios' %}" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extra_js %}
+{% if modo == "alta" %}
+<script>
+(function () {
+  // Códigos de rol que usan matrícula como username (enviados desde el DOM)
+  // El data-codigo está en cada <option> para detectar ALUMNO.
+  var sel = document.getElementById('id_rol_inicial');
+  var div = document.getElementById('div_matricula');
+  var inp = document.getElementById('id_matricula_alumno');
+
+  function toggleMatricula(selectEl) {
+    var opt = selectEl.options[selectEl.selectedIndex];
+    var codigo = opt ? opt.dataset.codigo : '';
+    var show = (codigo === 'ALUMNO');
+    div.style.display = show ? '' : 'none';
+    inp.required = show;
+  }
+
+  if (sel) {
+    sel.addEventListener('change', function () { toggleMatricula(sel); });
+    // Inicializar al cargar (en caso de re-render POST)
+    toggleMatricula(sel);
+  }
+}());
+</script>
+{% endif %}
+{% endblock extra_js %}

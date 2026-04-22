@@ -1,0 +1,83 @@
+{% extends "ui/base.html" %}
+{% block title %}Ventas | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h1 class="h4 mb-0"><strong>Ventas</strong></h1>
+    <small class="text-muted">Indicadores del día: {{ indicadores.fecha }}</small>
+  </div>
+  <div class="d-flex gap-2 align-items-center">
+    {% if corte_hoy %}<span class="badge bg-success">Corte realizado</span>{% else %}<span class="badge bg-warning text-dark">Sin corte hoy</span>{% endif %}
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/">Volver al panel</a>
+  </div>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="card card-soft h-100">
+      <div class="card-body py-2 px-3">
+        <div class="small text-muted mb-1">Órdenes del día</div>
+        <div class="h5 mb-0 fw-bold">{{ indicadores.ordenes_hoy }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card card-soft h-100">
+      <div class="card-body py-2 px-3">
+        <div class="small text-muted mb-1">Venta del día</div>
+        <div class="h5 mb-0 fw-bold">${{ indicadores.ventas_hoy }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card card-soft h-100">
+      <div class="card-body py-2 px-3">
+        <div class="small text-muted mb-1">Cobranza del día</div>
+        <div class="h5 mb-0 fw-bold">${{ indicadores.cobranza_hoy }}</div>
+        <small class="text-muted">{{ indicadores.pagos_hoy }} pago(s)</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card card-soft h-100">
+      <div class="card-body py-2 px-3">
+        <div class="small text-muted mb-1">Órdenes abiertas</div>
+        <div class="h5 mb-0 fw-bold">{{ indicadores.ordenes_abiertas }}</div>
+        <small class="text-muted">Pendientes o parciales</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-header py-2"><strong class="small">Accesos rápidos</strong></div>
+  <div class="card-body py-2 px-3 d-flex flex-wrap gap-2">
+    {% for a in accesos %}
+    <a class="btn btn-outline-secondary btn-sm" href="{{ a.href }}">{{ a.title }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if alertas_stock %}
+<div class="card card-soft border-warning">
+  <div class="card-header py-2 d-flex justify-content-between align-items-center">
+    <strong class="small text-warning">Alertas de stock mínimo ({{ indicadores.alertas_stock }})</strong>
+    <a class="btn btn-outline-warning btn-sm" href="/panel/ventas/inventario/compras/">Ver inventario</a>
+  </div>
+  <div class="card-body p-0">
+    <ul class="list-group list-group-flush mb-0">
+      {% for alerta in alertas_stock %}
+      <li class="list-group-item py-2 px-3 d-flex justify-content-between align-items-center">
+        <span class="small">{{ alerta.existencia.concepto.nombre }}</span>
+        <span>
+          <span class="badge bg-danger">Stock: {{ alerta.stock_actual }}</span>
+          <span class="badge bg-secondary">Mín: {{ alerta.stock_minimo }}</span>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

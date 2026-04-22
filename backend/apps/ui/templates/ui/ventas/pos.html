@@ -1,0 +1,145 @@
+{% extends "ui/base.html" %}
+{% block title %}Ventas a alumnos | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="h4 mb-1"><strong>Ventas a alumnos</strong></h1>
+  <p class="text-muted mb-0">Registra cobros de inscripción y materiales asociados a una inscripción activa.</p>
+</div>
+
+<div class="card card-soft mb-3">
+  <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <a class="btn btn-outline-secondary btn-sm" href="/panel/ventas/">Volver a Ventas</a>
+  </div>
+</div>
+
+<!-- MODO FORMULARIO -->
+<div class="card card-soft mb-3">
+  <div class="card-header">
+    <strong>Registrar venta</strong>
+  </div>
+  <div class="card-body">
+    <form method="post" class="row g-2">
+      {% csrf_token %}
+      <div class="col-12 col-md-5">
+        <label class="form-label fw-semibold">Inscripción del alumno</label>
+        <select class="form-select form-select-sm" name="inscripcion_id" required>
+          <option value="">— Selecciona inscripción —</option>
+          {% for i in inscripciones %}
+            <option value="{{ i.pk }}">
+              {{ i.alumno.matricula }} · {{ i.alumno.nombres }} {{ i.alumno.apellido_paterno }} ({{ i.grupo.periodo }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-semibold">Concepto</label>
+        <select class="form-select form-select-sm" name="concepto_id" required>
+          <option value="">— Selecciona concepto —</option>
+          {% for c in conceptos %}
+            <option value="{{ c.pk }}"
+              {% if c.existencia and c.existencia.inventario_habilitado %}
+                data-tipo="material" data-stock="{{ c.existencia.stock_actual }}"
+              {% else %}
+                data-tipo="servicio"
+              {% endif %}>
+              {{ c.nombre }} — ${{ c.precio }}
+              {% if c.existencia and c.existencia.inventario_habilitado %}(stock: {{ c.existencia.stock_actual }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-4 col-md-1">
+        <label class="form-label fw-semibold">Cant.</label>
+        <input type="number" class="form-control form-control-sm" name="cantidad" value="1" min="1" required>
+      </div>
+      <div class="col-4 col-md-1">
+        <label class="form-label fw-semibold">Desc. %</label>
+        <input type="number" class="form-control form-control-sm" name="descuento_pct" value="0" min="0" max="100" step="0.01">
+      </div>
+      <div class="col-4 col-md-1">
+        <label class="form-label fw-semibold">Método</label>
+        <select class="form-select form-select-sm" name="metodo">
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="TARJETA">Tarjeta</option>
+          <option value="TRANSFERENCIA">Transferencia</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-semibold">Motivo descuento</label>
+        <input type="text" class="form-control form-control-sm" name="descuento_motivo" maxlength="120"
+          placeholder="Requerido solo si hay descuento">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label fw-semibold">Autoriza (usuario)</label>
+        <input type="text" class="form-control form-control-sm" name="autoriza_username" maxlength="150"
+          placeholder="Usuario con rol Director Escolar">
+      </div>
+      <div class="col-12 col-md-4 d-flex align-items-end">
+        <button class="btn btn-joca btn-sm w-100" type="submit">Registrar venta</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODO LISTADO -->
+<div class="card card-soft">
+  <div class="card-header">
+    <strong>Ventas registradas</strong>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th class="ps-3">#</th>
+          <th>Alumno</th>
+          <th>Período</th>
+          <th>Total</th>
+          <th>Fecha</th>
+          <th>Comprobante</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in page_obj %}
+        <tr>
+          <td class="ps-3">{{ o.id }}</td>
+          <td>{{ o.inscripcion.alumno.matricula }}</td>
+          <td>{{ o.periodo }}</td>
+          <td>${{ o.total_calculado|default:"—" }}</td>
+          <td>{{ o.fecha_emision|date:"d/m/Y H:i" }}</td>
+          <td>
+            {% if o.pagos.first and o.pagos.first.ticket %}
+              <a class="badge bg-success text-decoration-none"
+                 href="/panel/ventas/ticket/{{ o.pagos.first.ticket.pk }}/">Ver comprobante</a>
+            {% else %}
+              <span class="badge bg-secondary">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-3">No hay ventas registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <span class="small text-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+      {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Anterior</button>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-secondary btn-sm" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+      {% else %}
+        <button class="btn btn-outline-secondary btn-sm" disabled>Siguiente</button>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
