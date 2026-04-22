@@ -1,0 +1,48 @@
+# === SECRETOS — NUNCA COMMITEAR ===
+.env
+.env.dev
+.env.prod
+backend/.env
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# === Entorno virtual ===
+.venv/
+venv/
+env/
+
+# === Base de datos ===
+*.sqlite3
+backend/db.sqlite3
+
+# === Logs ===
+backend/logs/*.log
+logs/*.log
+*.log
+
+# === Docker ===
+pgdata/
+pgdata_prod/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === macOS ===
+.DS_Store
+
+# === Pytest / coverage ===
+.pytest_cache/
+htmlcov/
+.coverage

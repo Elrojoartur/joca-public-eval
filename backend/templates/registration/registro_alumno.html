@@ -1,0 +1,59 @@
+{% extends "ui/base.html" %}
+{% block title %}Registro | {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6 col-lg-5">
+    <div class="card card-soft">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h1 class="h4 mb-0">Registro de alumno</h1>
+          <a class="btn btn-outline-secondary btn-sm" href="/acceso/">Volver</a>
+        </div>
+
+        {% if messages %}
+        {% for m in messages %}
+        <div class="alert alert-{{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <input type="text" name="verificacion" class="d-none" autocomplete="off" tabindex="-1">
+
+          <div class="mb-3">
+            <label class="form-label">Matrícula</label>
+            <input class="form-control" name="matricula" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Correo</label>
+            <input class="form-control" name="correo" type="email" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Contraseña</label>
+            <input class="form-control" name="password1" type="password" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Confirmar contraseña</label>
+            <input class="form-control" name="password2" type="password" required>
+          </div>
+
+          <div class="mb-2">
+            <div class="muted">Verificación de seguridad</div>
+            <div class="small">Código: <strong>{{ security_code }}</strong></div>
+          </div>
+          <div class="mb-3">
+            <input class="form-control" name="security" placeholder="Escribe el código" required>
+            <div class="form-text">Validación de acceso para prevenir uso automatizado.</div>
+          </div>
+
+          <button class="btn btn-joca w-100" type="submit">Enviar registro</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

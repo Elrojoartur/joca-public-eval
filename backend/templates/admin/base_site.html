@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Administración CCENT Nikola Tesla{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    /* Logo + texto en header */
+    #header #site-name a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:800;
+      text-decoration:none;
+    }
+    #header #site-name img{
+      height:44px;
+      width:auto;
+      background:#fff;         /* para que se note en header oscuro */
+      padding:3px;
+      border-radius:8px;
+    }
+  </style>
+{% endblock %}
+
+{% block branding %}
+  <h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+      <img src="{% static 'ui/brand/logo-institucional.png' %}?v=1" alt="CCENT Nikola Tesla">
+      Administración CCENT Nikola Tesla
+    </a>
+  </h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script>
+    (function lockAdminBackNavigation() {
+      if (!window.history || !window.history.pushState) {
+        return;
+      }
+
+      history.replaceState({ adminLocked: true }, '', window.location.href);
+      history.pushState({ adminLocked: true, adminGuard: true }, '', window.location.href);
+
+      window.addEventListener('popstate', function () {
+        history.pushState({ adminLocked: true, adminGuard: true }, '', window.location.href);
+      });
+    })();
+  </script>
+{% endblock %}

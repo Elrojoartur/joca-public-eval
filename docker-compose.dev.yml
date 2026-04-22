@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ccent_postgres_dev
+    env_file:
+      - .env.dev
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-CCENT_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set_in_env}
+      POSTGRES_DB: ${POSTGRES_DB:-CCENT_db}
+    ports: []
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-CCENT_user} -d ${POSTGRES_DB:-CCENT_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build: ./backend
+    container_name: ccent_web_dev
+    env_file:
+      - .env.dev
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    command: python manage.py runserver 0.0.0.0:8000
+
+volumes:
+  pgdata_dev:
+    driver: local

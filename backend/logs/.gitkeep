@@ -1,0 +1,2 @@
+# Este directorio contiene los archivos de log rotativos del sistema.
+# Los archivos .log están en .gitignore y no se suben al repositorio.

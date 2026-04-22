@@ -1,0 +1,698 @@
+business_rules:
+- br_id: BR-001
+  rn_code: RN-A01
+  description: 'Oferta académica: cursos por categoría/área con estatus activo/inactivo'
+  status: mvp
+  hu_related:
+  - HU 004
+  - HU 039
+  modules:
+  - MOD-01 Portal Publico
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  - Director Escolar
+  - Superusuario
+  entities:
+  - FormaPago
+  - Horario
+  - Plan
+  - Producto
+  - Servicio
+  - categoria
+  - duración
+  - fecha_inicio
+  - modalidad
+  endpoints:
+  - GET /cursos
+- br_id: BR-002
+  rn_code: RN-A02
+  description: Cursos se imparten mediante grupos; grupo pertenece a curso y periodo;
+    nombre/código
+  status: mvp
+  hu_related:
+  - HU 023
+  - HU 044
+  modules:
+  - MOD-04 Escolar
+  - MOD-07 Reportes y Tablero
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Grupo
+  - Periodo
+  - ReporteCalificaciones
+  - ReporteInscripciones
+  endpoints: []
+- br_id: BR-003
+  rn_code: RN-A03
+  description: Grupo con uno o varios horarios (días y rangos de hora)
+  status: mvp
+  hu_related:
+  - HU 023
+  - HU 039
+  modules:
+  - MOD-04 Escolar
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Director Escolar
+  - Superusuario
+  entities:
+  - FormaPago
+  - Grupo
+  - Horario
+  - Periodo
+  - Plan
+  - Producto
+  - Servicio
+  endpoints: []
+- br_id: BR-004
+  rn_code: RN-A04
+  description: Grupo con cupo; impedir inscripción cuando cupo completo
+  status: mvp
+  hu_related:
+  - HU 023
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - Grupo
+  - Inscripción
+  - Periodo
+  endpoints: []
+- br_id: BR-005
+  rn_code: RN-A05
+  description: Periodo define ventana (inicio/fin) y estado (abierto/cerrado); operaciones
+    restringidas
+  status: mvp
+  hu_related:
+  - HU 023
+  - HU 028
+  - HU 044
+  - HU 047
+  modules:
+  - MOD-04 Escolar
+  - MOD-07 Reportes y Tablero
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Acta
+  - EventoAuditoria
+  - FiltroReporte
+  - Grupo
+  - Periodo
+  - PresetFiltro
+  - ReporteCalificaciones
+  - ReporteInscripciones
+  endpoints: []
+- br_id: BR-006
+  rn_code: RN-P01
+  description: Alumno con matrícula, identidad y estatus
+  status: mvp
+  hu_related:
+  - HU 022
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - DocumentoAlumno
+  - EventoAuditoria
+  - Grupo
+  - Inscripción
+  endpoints: []
+- br_id: BR-007
+  rn_code: RN-P02
+  description: Alumno con múltiples contactos (teléfonos/correos) y uno principal
+  status: mvp
+  hu_related:
+  - HU 022
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - DocumentoAlumno
+  - EventoAuditoria
+  endpoints: []
+- br_id: BR-008
+  rn_code: RN-P03
+  description: Domicilio del alumno con vigencia (actual/histórico)
+  status: mvp
+  hu_related:
+  - HU 022
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - DocumentoAlumno
+  - EventoAuditoria
+  endpoints: []
+- br_id: BR-009
+  rn_code: RN-P04
+  description: 'Alumno menor: registrar tutor/responsable y contacto'
+  status: mvp
+  hu_related:
+  - HU 022
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - DocumentoAlumno
+  - EventoAuditoria
+  endpoints: []
+- br_id: BR-010
+  rn_code: RN-P05
+  description: Contacto de emergencia por alumno
+  status: mvp
+  hu_related:
+  - HU 022
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - DocumentoAlumno
+  - EventoAuditoria
+  endpoints: []
+- br_id: BR-011
+  rn_code: RN-I01
+  description: Alumno puede inscribirse a varios grupos en distintos periodos, sujeto
+    a reglas
+  status: mvp
+  hu_related:
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - Grupo
+  - Inscripción
+  endpoints: []
+- br_id: BR-012
+  rn_code: RN-I02
+  description: Impedir inscripción duplicada al mismo grupo (unicidad alumno-grupo)
+  status: mvp
+  hu_related:
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - Grupo
+  - Inscripción
+  endpoints: []
+- br_id: BR-013
+  rn_code: RN-I03
+  description: Inscripción con ciclo de vida (activa, baja, concluida), motivo y timestamps
+  status: mvp
+  hu_related:
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - Grupo
+  - Inscripción
+  endpoints: []
+- br_id: BR-014
+  rn_code: RN-I04
+  description: Baja conserva trazabilidad (quién, cuándo, por qué); no elimina evidencia
+  status: mvp
+  hu_related:
+  - HU 024
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Director Escolar
+  entities:
+  - Alumno
+  - Grupo
+  - Inscripción
+  endpoints: []
+- br_id: BR-015
+  rn_code: RN-C01
+  description: Asistencia por sesión/fecha asociada a inscripción
+  status: backlog
+  hu_related:
+  - HU-FUT-001
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-016
+  rn_code: RN-C02
+  description: Calificaciones por rubro/unidad/parcial, asociadas a inscripción; validar
+    rangos
+  status: mvp
+  hu_related:
+  - HU 025
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Alumno
+  - Director Escolar
+  entities:
+  - Acta
+  - Calificacion
+  - Evaluación
+  endpoints: []
+- br_id: BR-017
+  rn_code: RN-C03
+  description: Calcular promedios y estatus académico a partir de calificaciones
+  status: mvp
+  hu_related:
+  - HU 025
+  - HU 043
+  - HU 044
+  modules:
+  - MOD-04 Escolar
+  - MOD-07 Reportes y Tablero
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  - Director Escolar
+  entities:
+  - Acta
+  - AlertaStock
+  - Calificacion
+  - Evaluación
+  - Indicador
+  - KPI
+  - ReporteCalificaciones
+  - ReporteInscripciones
+  endpoints: []
+- br_id: BR-018
+  rn_code: RN-C04
+  description: Emisión de boleta por periodo cuando calificaciones requeridas completas
+  status: mvp
+  hu_related:
+  - HU 027
+  - HU 046
+  modules:
+  - MOD-04 Escolar
+  - MOD-07 Reportes y Tablero
+  roles_typical:
+  - Alumno
+  - Director Escolar
+  entities:
+  - Boleta
+  - Calificacion
+  - ExportacionReporte
+  - Periodo
+  endpoints: []
+- br_id: BR-019
+  rn_code: RN-C05
+  description: Cierre de acta por grupo/periodo; bloquea edición; flujo controlado
+    corrección
+  status: mvp
+  hu_related:
+  - HU 028
+  - HU 025
+  modules:
+  - MOD-04 Escolar
+  roles_typical:
+  - Alumno
+  - Director Escolar
+  entities:
+  - Acta
+  - Calificacion
+  - Evaluación
+  - EventoAuditoria
+  endpoints: []
+- br_id: BR-020
+  rn_code: RN-V01
+  description: Catálogo de productos/conceptos de cobro con precio y estado
+  status: mvp
+  hu_related:
+  - HU 029
+  - HU 039
+  modules:
+  - MOD-05 Ventas POS
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Administrativo Comercial
+  - Superusuario
+  entities:
+  - Categoria
+  - Existencia
+  - FormaPago
+  - Horario
+  - Impuesto
+  - Plan
+  - Producto
+  - Servicio
+  endpoints: []
+- br_id: BR-021
+  rn_code: RN-V02
+  description: Venta (orden POS) cabecera+detalle items (producto,cantidad,precio)
+  status: mvp
+  hu_related:
+  - HU 030
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - Cliente
+  - DetalleVenta
+  - Ticket
+  - Venta
+  endpoints: []
+- br_id: BR-022
+  rn_code: RN-V03
+  description: Registrar precio aplicado por renglón (histórico)
+  status: mvp
+  hu_related:
+  - HU 030
+  - HU 029
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - Categoria
+  - Cliente
+  - DetalleVenta
+  - Existencia
+  - Impuesto
+  - Producto
+  - Ticket
+  - Venta
+  endpoints: []
+- br_id: BR-023
+  rn_code: RN-V04
+  description: No vender con stock insuficiente si inventario habilitado
+  status: mvp
+  hu_related:
+  - HU 030
+  - HU 029
+  - HU 034
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - AlertaStock
+  - Categoria
+  - Cliente
+  - DetalleVenta
+  - Existencia
+  - Impuesto
+  - Producto
+  - Ticket
+  - Venta
+  endpoints: []
+- br_id: BR-024
+  rn_code: RN-V05
+  description: Múltiples pagos por orden; saldo
+  status: mvp
+  hu_related:
+  - HU 031
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - Alumno
+  - EstadoCuenta
+  - Pago
+  endpoints: []
+- br_id: BR-025
+  rn_code: RN-V06
+  description: Emitir ticket por pago/orden; folio; PDF opcional
+  status: mvp
+  hu_related:
+  - HU 030
+  - HU 031
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - Alumno
+  - Cliente
+  - DetalleVenta
+  - EstadoCuenta
+  - Pago
+  - Ticket
+  - Venta
+  endpoints: []
+- br_id: BR-026
+  rn_code: RN-V07
+  description: Descuentos solo con autorización; evidencia; topes
+  status: mvp
+  hu_related:
+  - HU 033
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  entities:
+  - Autorización
+  - Permiso
+  - ReglaDescuento
+  endpoints: []
+- br_id: BR-027
+  rn_code: RN-V08
+  description: Corte de caja; bloqueo cambios retroactivos salvo auditoría
+  status: mvp
+  hu_related:
+  - HU 035
+  - HU 045
+  modules:
+  - MOD-05 Ventas POS
+  - MOD-07 Reportes y Tablero
+  roles_typical:
+  - Administrativo Comercial
+  entities:
+  - CorteCaja
+  - MovimientoCaja
+  - ReporteVentas
+  endpoints: []
+- br_id: BR-028
+  rn_code: RN-INV01
+  description: Inventario por movimientos derivados de ventas/compras/ajustes
+  status: mvp
+  hu_related:
+  - HU 030
+  - HU 034
+  - HU 029
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  entities:
+  - AlertaStock
+  - Categoria
+  - Cliente
+  - DetalleVenta
+  - Existencia
+  - Impuesto
+  - Producto
+  - Ticket
+  - Venta
+  endpoints: []
+- br_id: BR-029
+  rn_code: RN-INV02
+  description: Stock mínimo y alertas
+  status: mvp
+  hu_related:
+  - HU 034
+  modules:
+  - MOD-05 Ventas POS
+  roles_typical:
+  - Administrativo Comercial
+  entities:
+  - AlertaStock
+  - Existencia
+  endpoints: []
+- br_id: BR-030
+  rn_code: RN-INV03
+  description: Compras cabecera+detalle; entradas a inventario
+  status: backlog
+  hu_related:
+  - HU-FUT-002
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-031
+  rn_code: RN-INV04
+  description: Proveedores variables; compra registra proveedor utilizado
+  status: backlog
+  hu_related:
+  - HU-FUT-003
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-032
+  rn_code: RN-INV05
+  description: Historial de costos por compra; no sobrescribir costo histórico
+  status: backlog
+  hu_related:
+  - HU-FUT-004
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-033
+  rn_code: RN-F01
+  description: Cliente puede requerir factura; registrar datos fiscales
+  status: backlog
+  hu_related:
+  - HU-FUT-005
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-034
+  rn_code: RN-F02
+  description: Datos fiscales entidad separada opcional
+  status: backlog
+  hu_related:
+  - HU-FUT-006
+  modules: []
+  roles_typical: []
+  entities: []
+  endpoints: []
+- br_id: BR-035
+  rn_code: RN-F03
+  description: Validar consistencia mínima RFC y CP fiscal conforme práctica vigente
+  status: mvp
+  hu_related:
+  - HU 026
+  modules:
+  - MOD-04 Escolar
+  roles_typical: []
+  entities:
+  - Alumno
+  endpoints: []
+- br_id: BR-036
+  rn_code: RN-S01
+  description: Control de acceso basado en roles; usuario con uno o varios roles;
+    permisos
+  status: mvp
+  hu_related:
+  - HU 016
+  - HU 021
+  - HU 015
+  modules:
+  - MOD-03 Usuarios y Roles
+  roles_typical:
+  - Superusuario
+  entities:
+  - EventoAuditoria
+  - Permiso
+  - Rol
+  - RolPermiso
+  - Usuario
+  - UsuarioRol
+  endpoints: []
+- br_id: BR-037
+  rn_code: RN-S02
+  description: Auditoría/bitácora de acciones relevantes
+  status: mvp
+  hu_related:
+  - HU 017
+  - HU 042
+  - HU 038
+  modules:
+  - MOD-03 Usuarios y Roles
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Superusuario
+  entities:
+  - EventoAuditoria
+  - EvidenciaConfig
+  - Respaldo
+  endpoints: []
+- br_id: BR-038
+  rn_code: RN-S03
+  description: Parámetros de gobierno; catálogos; impedir eliminar referenciados;
+    solo desactivar
+  status: mvp
+  hu_related:
+  - HU 039
+  - HU 020
+  - HU 029
+  modules:
+  - MOD-03 Usuarios y Roles
+  - MOD-05 Ventas POS
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Administrativo Comercial
+  - Superusuario
+  entities:
+  - Categoria
+  - EventoAuditoria
+  - Existencia
+  - FormaPago
+  - Horario
+  - Impuesto
+  - Plan
+  - Producto
+  - Servicio
+  - Sesión
+  - Token
+  - Usuario
+  endpoints: []
+- br_id: BR-039
+  rn_code: RN-S04
+  description: 'Políticas de seguridad: intentos, expiración sesión/tokens, CAPTCHA;
+    evidencia'
+  status: mvp
+  hu_related:
+  - HU 008
+  - HU 012
+  - HU 013
+  - HU 010
+  - HU 037
+  - HU 005
+  modules:
+  - MOD-01 Portal Publico
+  - MOD-02 Portal Publico
+  - MOD-06 Configuración y Gobierno
+  roles_typical:
+  - Administrativo Comercial
+  - Alumno
+  - Director Escolar
+  - Superusuario
+  entities:
+  - BitacoraAcceso
+  - Captcha
+  - PoliticaSeguridad
+  - Sesión
+  - Token
+  - Usuario
+  - asunto
+  - captcha_token
+  - mensaje
+  endpoints:
+  - POST /auth/login
+  - POST /contacto
