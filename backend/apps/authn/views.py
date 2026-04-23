@@ -78,6 +78,9 @@ class PortalLoginView(LoginView):
         ip = get_client_ip(request)
         request._skip_register_attempt = False
 
+        # Primer filtro: campo honeypot invisible. Los agentes automatizados suelen
+        # completar todos los campos del formulario; su activación descarta la petición
+        # sin revelar la razón al cliente.
         # Honeypot: si viene con valor, abortar sin procesar auth
         if (request.POST.get("hp") or "").strip():
             log_event(
@@ -95,6 +98,8 @@ class PortalLoginView(LoginView):
             form = self.get_form()
             return self.form_invalid(form)
 
+        # Segundo filtro: CAPTCHA aritmético generado por sesión. Mitiga ataques de
+        # fuerza bruta automatizados exigiendo una respuesta válida antes de procesar credenciales.
         # Verificación (tipo CAPTCHA por suma)
         verif = (request.POST.get("verificacion") or "").strip()
         expected = request.session.get("login_verif_answer")
@@ -113,6 +118,8 @@ class PortalLoginView(LoginView):
             form = self.get_form()
             return self.form_invalid(form)
 
+        # Tercer filtro: bloqueo temporal por combinación IP+usuario tras superar el
+        # umbral de intentos fallidos configurado en ParametroSistema (SEGURIDAD).
         # Lockout (después de pasar verificación)
         if is_locked_out(username, ip):
             log_event(
@@ -135,6 +142,8 @@ class PortalLoginView(LoginView):
     def form_valid(self, form):
         username = form.cleaned_data.get("username", "")
         ip = get_client_ip(self.request)
+        # Restablece el contador de intentos para no penalizar al usuario legítimo
+        # en futuros intentos de acceso tras una autenticación exitosa.
         reset_attempts(username, ip)
 
         log_event(

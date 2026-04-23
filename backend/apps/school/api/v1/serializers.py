@@ -47,6 +47,8 @@ class InscripcionSerializer(serializers.ModelSerializer):
             qs = Inscripcion.objects.filter(alumno=alumno, grupo=grupo)
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
+            # Valida duplicidad a nivel de serialización antes de que la restricción de
+            # BD lo rechace, permitiendo retornar un error 400 con mensaje legible.
             if qs.exists():
                 raise serializers.ValidationError(
                     {"non_field_errors": ["El alumno ya está inscrito en este grupo."]})
@@ -66,6 +68,8 @@ class CalificacionSerializer(serializers.ModelSerializer):
             qs = Calificacion.objects.filter(inscripcion=inscripcion)
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
+            # Impide registrar una segunda calificación para la misma inscripción desde
+            # la API, complementando la restricción OneToOne del modelo.
             if qs.exists():
                 raise serializers.ValidationError(
                     {"inscripcion": ["Esta inscripción ya tiene calificación registrada."]})

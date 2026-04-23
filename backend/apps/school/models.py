@@ -48,6 +48,8 @@ class Alumno(models.Model):
         return self.nombre_completo
 
     def save(self, *args, **kwargs):
+        # La matrícula se genera automáticamente solo en la creación; si ya existe no
+        # se sobreescribe, preservando el identificador institucional del alumno.
         if not self.pk and not self.matricula:
             from apps.school.services.matricula import generate_matricula
             self.matricula = generate_matricula()
@@ -448,9 +450,14 @@ class Inscripcion(models.Model):
     def __str__(self):
         return f"Inscripcion {self.alumno_id} -> {self.grupo_id}"
 
+    # La restricción uq_inscripcion_alumno_grupo a nivel de BD es la última línea
+    # de defensa contra duplicados; la validación en serializers/servicios debe
+    # anticiparse antes de llegar aquí para ofrecer un mensaje de error amigable.
     # TODO: validar cupo disponible y grupo activo antes de crear (servicio/domino).
 
 
+# Relación 1:1 con Inscripcion: cada inscripción tiene como máximo una
+# calificación, lo que garantiza trazabilidad académica unívoca.
 class Calificacion(models.Model):
     inscripcion = models.OneToOneField(
         Inscripcion,
@@ -496,6 +503,8 @@ class ActaCierre(models.Model):
         verbose_name_plural = "Actas de cierre"
         ordering = ["-cerrada_en"]
         constraints = [
+            # La unicidad sobre grupo impide registrar más de un acta de cierre por grupo,
+            # protegiendo la inmutabilidad del historial académico del período.
             models.UniqueConstraint(
                 fields=["grupo"],
                 name="uq_actacierre_grupo",

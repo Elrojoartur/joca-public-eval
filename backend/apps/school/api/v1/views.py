@@ -42,6 +42,8 @@ class SchoolRolePermission(permissions.BasePermission):
         role = get_user_role(request.user)
         if request.user.is_superuser or role == ROLE_DIRECTOR:
             return True
+        # Administrativo Comercial y Alumno tienen acceso de solo lectura; las
+        # operaciones de escritura quedan restringidas al Director y Superusuario.
         if role == ROLE_ADMIN_COM:
             return request.method in permissions.SAFE_METHODS
         if role == ROLE_ALUMNO:

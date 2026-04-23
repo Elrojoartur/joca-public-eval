@@ -44,6 +44,8 @@ class OrdenPOS(models.Model):
     class Meta:
         verbose_name = "Orden"
         verbose_name_plural = "Ordenes"
+        # Restricción de negocio: una inscripción puede tener a lo sumo una orden de
+        # pago; evita generar cobros duplicados por el mismo concepto de inscripción.
         constraints = [
             models.UniqueConstraint(
                 fields=["inscripcion"], name="uq_orden_inscripcion")
@@ -109,6 +111,8 @@ class Pago(models.Model):
         return f"Pago {self.monto} ({self.metodo})"
 
 
+# Relación 1:1 con Pago: garantiza que nunca se emitan dos comprobantes
+# para el mismo pago, conservando la integridad del registro fiscal.
 class Ticket(models.Model):
     pago = models.OneToOneField(
         Pago, on_delete=models.CASCADE, related_name="ticket")
@@ -192,6 +196,9 @@ class CorteCaja(models.Model):
     def __str__(self):
         return f"Corte {self.fecha_operacion}"
 
+    # El campo fecha_operacion con unique=True impide registrar dos cortes en
+    # la misma fecha; resumen_calculado recalcula totales en tiempo de consulta
+    # para reflejar el estado real de pagos sin depender de totales precalculados.
     @classmethod
     def resumen_calculado(cls, fecha_operacion):
         orden_item_model = apps.get_model("sales", "OrdenItem")

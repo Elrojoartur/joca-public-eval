@@ -20,6 +20,8 @@ class Permiso(models.Model):
         return self.nombre
 
 
+# unique_together sobre (rol, permiso) impide asignar el mismo permiso a un
+# rol más de una vez, evitando escalaciones implícitas por duplicación.
 class RolPermiso(models.Model):
     rol = models.ForeignKey(Rol, on_delete=models.CASCADE)
     permiso = models.ForeignKey(Permiso, on_delete=models.CASCADE)
@@ -35,6 +37,9 @@ class RolPermiso(models.Model):
         return f"{self.rol} -> {self.permiso}"
 
 
+# SET_NULL conserva el registro de auditoría aunque el usuario sea eliminado;
+# garantiza la trazabilidad de acciones históricas independientemente del
+# ciclo de vida de la cuenta.
 class EventoAuditoria(models.Model):
     actor = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.SET_NULL, null=True, blank=True)

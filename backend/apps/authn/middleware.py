@@ -22,6 +22,8 @@ class IdleTimeoutMiddleware:
 
         if getattr(request, "user", None) and request.user.is_authenticated:
             last_activity = request.session.get("last_activity")
+            # Verifica inactividad antes de procesar la petición; si el umbral se supera,
+            # invalida la sesión y redirige al login para reducir el riesgo de secuestro de sesión.
             if last_activity and now_ts - last_activity > timeout:
                 username = getattr(request.user, "username", "")
                 log_event(
@@ -49,6 +51,8 @@ class IdleTimeoutMiddleware:
 class PanelAccessMiddleware:
     """Aplica control de acceso por rol para rutas /panel/* de forma centralizada."""
 
+    # Las reglas se evalúan en orden descendente de especificidad; la primera
+    # coincidencia de prefijo determina el conjunto de roles requeridos para esa ruta.
     ROLE_RULES = (
         ("/panel/escolar/", {"SUPERUSUARIO", "DIRECTOR_ESCOLAR"}),
         ("/panel/gobierno/", {"SUPERUSUARIO", "DIRECTOR_ESCOLAR"}),
@@ -152,6 +156,8 @@ class PanelAccessMiddleware:
 
     @staticmethod
     def _get_role_code(user):
+        # Consulta el rol desde UsuarioRol (modelo propio de gobernanza) en lugar de
+        # groups de Django, manteniendo una única fuente de verdad para el control de acceso.
         ur = UsuarioRol.objects.select_related(
             "rol").filter(usuario=user).first()
         if not ur or not ur.rol:

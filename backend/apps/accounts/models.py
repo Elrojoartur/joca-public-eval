@@ -17,6 +17,8 @@ class Rol(models.Model):
         return self.nombre
 
 
+# Relación intermedia usuario-rol; unique_together impide asignar el mismo rol
+# al mismo usuario más de una vez, evitando escalaciones de privilegio por duplicado.
 class UsuarioRol(models.Model):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

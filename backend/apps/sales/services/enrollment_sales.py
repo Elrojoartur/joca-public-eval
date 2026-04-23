@@ -21,6 +21,8 @@ def ensure_inscripcion_sale(inscripcion, requiere_factura: bool = False) -> dict
     - Base: 1000.00 MXN
     - Si requiere factura: agrega IVA 16%
     """
+    # Función idempotente: puede invocarse múltiples veces para la misma inscripción
+    # sin duplicar la orden ni sus partidas; get_or_create garantiza unicidad.
     orden, _ = OrdenPOS.objects.get_or_create(
         inscripcion=inscripcion,
         defaults={
@@ -54,6 +56,8 @@ def ensure_inscripcion_sale(inscripcion, requiere_factura: bool = False) -> dict
         },
     )
 
+    # La partida de IVA se agrega o elimina según el indicador de facturación;
+    # evita cobros fiscales incorrectos si el alumno cambia de modalidad de pago.
     if requiere_factura:
         OrdenItem.objects.update_or_create(
             orden=orden,

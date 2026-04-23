@@ -48,6 +48,8 @@ def _load_state(key: str) -> dict:
     return cache.get(key, {"attempts": [], "locked_until": None})
 
 
+# TTL mayor al máximo de ventana+bloqueo evita que el estado expire en caché
+# antes de que concluya el período de castigo configurado.
 def _save_state(key: str, state: dict):
     ttl = max(get_attempt_window_seconds(), get_lockout_seconds()) + 60
     cache.set(key, state, ttl)
@@ -83,6 +85,8 @@ def register_failed_attempt(username: str, ip: str) -> Tuple[int, bool]:
     attempts.append(now_ts)
     locked = False
 
+    # Cuando se alcanza el umbral, se registra el bloqueo y se persiste la marca
+    # temporal; los límites se leen desde ParametroSistema para permitir ajuste sin redespliegue.
     if len(attempts) >= get_max_attempts():
         locked = True
         locked_until = now_ts + get_lockout_seconds()
